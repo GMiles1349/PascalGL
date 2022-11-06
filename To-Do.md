@@ -3,6 +3,10 @@
 High Priority
 #################################################
 
+- Documentation
+-- Add/modify comments to classes/records and functions
+-- Start documentaion on 'specification'
+
 - Bugs/Functionality
 -- Windowing - Window size and client area can become incorrect when switching between
 windowed and fullscreen modes when the window has a title bar
