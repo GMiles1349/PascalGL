@@ -13,17 +13,17 @@ Uses
   Type pglClockEvent = Procedure();
 
 
-  Type TPGLTimeStruct = Record
+  Type pglTimeStruct = Record
     Seconds: Double;
     Minutes: Int32;
     Hours: Int32;
 
-    Class Operator Initialize(Out Dest: TPGLTimeStruct); Register;
+    Class Operator Initialize(Out Dest: pglTimeStruct); Register;
     Procedure AddTime(Time: Double); Register;
     Function ToString(): String; Register;
   End;
 
-  Type TPGLTimer = Class
+  Type pglTimer = Class
 
     Private
       pEvent: pglClockEvent;
@@ -45,13 +45,13 @@ Uses
       Property isActive: Boolean read pActive;
       Property isAssigned: Boolean read pisAssigned;
 
-      Function TimePassed(): TPGLTimeStruct; Register;
+      Function TimePassed(): pglTimeStruct; Register;
 
       Constructor Create(sEvent: pglClockEvent; sDuration: Double; sRepeat: Boolean); Overload;
-      Constructor Create(sEvent: pglClockEvent; sDuration: TPGLTimeStruct; sRepeat: Boolean); Overload;
+      Constructor Create(sEvent: pglClockEvent; sDuration: pglTimeStruct; sRepeat: Boolean); Overload;
       Procedure SetEvent(sEvent: pglClockEvent); Register;
       Procedure SetDuration(sDuration: Double); Overload;
-      Procedure SetDuration(sDuration: TPGLTimeStruct); Overload;
+      Procedure SetDuration(sDuration: pglTimeStruct); Overload;
       Procedure SetRepeating(sRepeat: Boolean = True); Register;
       Procedure UnAssign(); Register;
       Procedure Activate(); Register;
@@ -60,48 +60,48 @@ Uses
   End;
 
 
-  Type TPGLTimeTrigger = Class
+  Type pglTimeTrigger = Class
     Private
       pEvent: pglClockEvent;
-      pTriggerTime: TPGLTimeStruct;
+      pTriggerTime: pglTimeStruct;
       pTriggerOnNow: Boolean;
       pisActive: Boolean;
       pisAssigned: Boolean;
       pUnAssignSignal: Boolean;
 
-      Function Update(sTime: TPGLTimeStruct): Boolean; Register;
+      Function Update(sTime: pglTimeStruct): Boolean; Register;
 
     Public
 
-      Constructor Create(sEvent: pglClockEvent; sTriggerTime: TPGLTimeStruct; sTriggerOnNow: Boolean = False);
+      Constructor Create(sEvent: pglClockEvent; sTriggerTime: pglTimeStruct; sTriggerOnNow: Boolean = False);
       Procedure Activate(); Register;
       Procedure Deactivate(); Register;
       Procedure UnAssign(); Register;
 
       Property Event: pglClockEvent read pEvent;
-      Property TriggerTime: TPGLTimeStruct read pTriggerTime;
+      Property TriggerTime: pglTimeStruct read pTriggerTime;
       Property TriggerOnNow: Boolean read pTriggerOnNow;
       Property isActive: Boolean read pisActive;
       Property isAssigned: Boolean read pisAssigned;
 
   End;
 
-  Type TPGLClock = Class(TPersistent)
+  Type pglClock = Class(TPersistent)
 
     Private
       TimeFreq: Int64;
       InTime: Int64;
       TotalTime: Double;
-      pElapsedTime: TPGLTimeStruct;
-      pNow: TPGLTimeStruct;
+      pElapsedTime: pglTimeStruct;
+      pNow: pglTimeStruct;
       pareTimersPaused: Boolean;
-      TempTimer: Array of TPGLTimer;
-      TimerList: Array of TPGLTimer;
-      TempTrigger: Array of TPGLTimeTrigger;
-      TriggerList: Array of TPGLTimeTrigger;
+      TempTimer: Array of pglTimer;
+      TimerList: Array of pglTimer;
+      TempTrigger: Array of pglTimeTrigger;
+      TriggerList: Array of pglTimeTrigger;
 
-      Procedure AddTimer(Timer: TPGLTimer); Register;
-      Procedure RemoveTimer(Timer: TPGLTimer); Register;
+      Procedure AddTimer(Timer: pglTimer); Register;
+      Procedure RemoveTimer(Timer: pglTimer); Register;
       Procedure HandleTimers(); Register;
 
     Public
@@ -134,31 +134,31 @@ Uses
     Procedure UpdateCycle(); Register;
     Procedure ResetAverageFPS(); Register;
     Procedure SetSyncInterval(InTicks: UInt32); Register;
-    Procedure AssignTimer(Timer: TPGLTimer); Register;
+    Procedure AssignTimer(Timer: pglTimer); Register;
     Procedure SetSingleTimer(sEvent: pglClockEvent; sDuration: Double); Overload; Register;
-    Procedure SetSingleTimer(sEvent: pglClockEvent; sDuration: TPGLTimeStruct); Overload; Register;
+    Procedure SetSingleTimer(sEvent: pglClockEvent; sDuration: pglTimeStruct); Overload; Register;
     Procedure UnAssignAllTimers(); Register;
     Procedure PauseTimers(); Register;
     Procedure ResumeTimers(ResetTimers: Boolean = False); Register;
 
-    Procedure AddTrigger(Trigger: TPGLTimeTrigger); Register;
-    Procedure RemoveTrigger(Trigger: TPGLTimeTrigger); Register;
+    Procedure AddTrigger(Trigger: pglTimeTrigger); Register;
+    Procedure RemoveTrigger(Trigger: pglTimeTrigger); Register;
     Procedure HandleTriggers(); Register;
 
     Function GetTotalSeconds(): Double; Register;
     Function GetTotalMinutes(): Double; Register;
     Function GetTotalHours(): Double; Register;
 
-    Property ElapsedTime: TPGLTimeStruct read pElapsedTime;
-    Property Now: TPGLTimeStruct read pNow;
+    Property ElapsedTime: pglTimeStruct read pElapsedTime;
+    Property Now: pglTimeStruct read pNow;
     Property areTimersPaused: Boolean read pareTimersPaused;
 
   End;
 
-  Type TPGLTimeThread = Class(TThread)
+  Type pglTimeThread = Class(TThread)
 
     Private
-      Clock: TPGLClock;
+      Clock: pglClock;
       Constructor Create();
       Procedure Execute(); OverRide;
 
@@ -167,9 +167,9 @@ Uses
   End;
 
 
-  Type TPGLTimeInstance = Class
+  Type pglTimeInstance = Class
     Private
-      TimeThread: TPGLTimeThread;
+      TimeThread: pglTimeThread;
       Constructor Create();
   End;
 
@@ -178,11 +178,11 @@ Uses
 ////////////////////////////////////////////////////////////////////////////////
 
 
-  Function TimeStruct(H,M: Int32; S: Double): TPGLTimeStruct; Register;
+  Function TimeStruct(H,M: Int32; S: Double): pglTimeStruct; Register;
 
   Procedure CreateTimeThread(); Register;
   Procedure DestroyTimeThread(); Register;
-  Procedure AssignTimeThreadTimer(sTimer: TPGLTimer); Register;
+  Procedure AssignTimeThreadTimer(sTimer: pglTimer); Register;
   Procedure SetTimeThreadSingleTimer(sEvent: pglClockEvent; sDuration: Double); Register;
   Procedure PauseTimeThreadTimers(); Register;
   Procedure ResumeTimeThreadTimers(ResetTimers: Boolean = False); Register;
@@ -192,7 +192,7 @@ Uses
 ////////////////////////////////////////////////////////////////////////////////
 
 Var
-  TimeInstance: TPGLTimeInstance;
+  TimeInstance: pglTimeInstance;
 
 implementation
 
@@ -204,7 +204,7 @@ Uses
 ////////////////////////////////////////////////////////////////////////////////
 
 
-Function TimeStruct(H,M: Int32; S: Double): TPGLTimeStruct; Register;
+Function TimeStruct(H,M: Int32; S: Double): pglTimeStruct; Register;
   Begin
     Result.Seconds := S;
     Result.Minutes := M;
@@ -214,7 +214,7 @@ Function TimeStruct(H,M: Int32; S: Double): TPGLTimeStruct; Register;
 Procedure CreateTimeThread();
   Begin
     If Assigned(TimeInstance.TimeThread) = False Then Begin
-      TimeInstance.TimeThread := TPGLTimeThread.Create();
+      TimeInstance.TimeThread := pglTimeThread.Create();
     End;
   End;
 
@@ -225,7 +225,7 @@ Procedure DestroyTimeThread();
     End;
   End;
 
-Procedure AssignTimeThreadTimer(sTimer: TPGLTimer);
+Procedure AssignTimeThreadTimer(sTimer: pglTimer);
   Begin
     If Assigned(TimeInstance.TimeThread) Then Begin
       TimeInstance.TimeThread.Clock.AddTimer(sTimer);
@@ -255,31 +255,31 @@ Procedure ResumeTimeThreadTimers(ResetTimers: Boolean = False);
 
 
 ////////////////////////////////////////////////////////////////////////////////
-                               {TPGLTimeInstance}
+                               {pglTimeInstance}
 ////////////////////////////////////////////////////////////////////////////////
 
-Constructor TPGLTimeInstance.Create();
+Constructor pglTimeInstance.Create();
   Begin
 
   End;
 
 ////////////////////////////////////////////////////////////////////////////////
-                               {TPGLTimeThread}
+                               {pglTimeThread}
 ////////////////////////////////////////////////////////////////////////////////
 
 
-Constructor TPGLTimeThread.Create();
+Constructor pglTimeThread.Create();
   Begin
     Inherited Create(False);
     Self.NameThreadForDebugging('Time Thread');
     Self.SetFreeOnTerminate(True);
     Self.Priority := tpLower;
-    Self.Clock := TPGLClock.Create();
+    Self.Clock := pglClock.Create();
     Self.Clock.SetintervalInFPS(120);
   End;
 
 
-Procedure TPGLTimeThread.Execute();
+Procedure pglTimeThread.Execute();
   Begin
 
     Self.Clock.Start();
@@ -296,12 +296,12 @@ Procedure TPGLTimeThread.Execute();
                                {plgClock}
 ////////////////////////////////////////////////////////////////////////////////
 
-Constructor TPGLClock.Create();
+Constructor pglClock.Create();
   Begin
 
   End;
 
-Procedure TPGLClock.Start();
+Procedure pglClock.Start();
   Begin
     QueryPerformanceFrequency(Self.TimeFreq);
     Self.LastTime := Self.GetCurrentTime();
@@ -309,17 +309,17 @@ Procedure TPGLClock.Start();
     Self.Running := True;
   End;
 
-Procedure TPGLClock.Stop();
+Procedure pglClock.Stop();
   Begin
     Self.Running := False;
   End;
 
-Procedure TPGLClock.Toggle();
+Procedure pglClock.Toggle();
   Begin
     Self.Running := Not Self.Running;
   End;
 
-Procedure TPGLClock.Wait();
+Procedure pglClock.Wait();
   Begin
 
     If Self.Running = False Then Exit;
@@ -332,24 +332,24 @@ Procedure TPGLClock.Wait();
 
   End;
 
-Procedure TPGLClock.ResetElapsedTime();
+Procedure pglClock.ResetElapsedTime();
   Begin
     Self.pElapsedTime.Seconds := 0;
     Self.pElapsedTime.Hours := 0;
     Self.pElapsedTime.Minutes := 0;
   End;
 
-Procedure TPGLClock.SetIntervalInSeconds(inSeconds: Double);
+Procedure pglClock.SetIntervalInSeconds(inSeconds: Double);
   Begin
     Interval := inSeconds;
   End;
 
-Procedure TPGLClock.SetintervalInFPS(inFPS: Double);
+Procedure pglClock.SetintervalInFPS(inFPS: Double);
   Begin
     Interval := 1/inFps;
   End;
 
-Function TPGLClock.GetCurrentTime: Double;
+Function pglClock.GetCurrentTime: Double;
 Var
 NowTime: SYSTEMTIME;
   Begin
@@ -363,7 +363,7 @@ NowTime: SYSTEMTIME;
     Self.pNow.Minutes := NowTime.wMinute;
   End;
 
-Procedure TPGLClock.UpdateCycle();
+Procedure pglClock.UpdateCycle();
   Begin
 
     If Self.Running = False Then Begin
@@ -401,7 +401,7 @@ Procedure TPGLClock.UpdateCycle();
   End;
 
 
-Procedure TPGLClock.ResetAverageFPS();
+Procedure pglClock.ResetAverageFPS();
   Begin
     Self.FPSTotal := 0;
     Self.AverageFPS := 0;
@@ -411,7 +411,7 @@ Procedure TPGLClock.ResetAverageFPS();
   End;
 
 
-Procedure TPGLClock.SetSyncInterval(InTicks: Cardinal);
+Procedure pglClock.SetSyncInterval(InTicks: Cardinal);
   Begin
     Self.SyncInterval := InTicks;
     Self.SyncCount := 0;
@@ -419,34 +419,34 @@ Procedure TPGLClock.SetSyncInterval(InTicks: Cardinal);
   End;
 
 
-Procedure TPGLClock.AssignTimer(Timer: TPGLTimer);
+Procedure pglClock.AssignTimer(Timer: pglTimer);
   Begin
     Self.AddTimer(Timer);
   End;
 
-Procedure TPGLClock.SetSingleTimer(sEvent: pglClockEvent; sDuration: Double);
+Procedure pglClock.SetSingleTimer(sEvent: pglClockEvent; sDuration: Double);
 Var
 I: Int32;
   Begin
     SetLength(Self.TempTimer, Length(Self.TempTimer) + 1);
     I := High(Self.TempTimer);
-    Self.TempTimer[i] := TPGLTimer.Create(sEvent,sDuration,False);
+    Self.TempTimer[i] := pglTimer.Create(sEvent,sDuration,False);
     Self.AddTimer(Self.TempTimer[i]);
     Self.TempTimer[i].Activate();
   End;
 
-Procedure TPGLClock.SetSingleTimer(sEvent: pglClockEvent; sDuration: TPGLTimeStruct);
+Procedure pglClock.SetSingleTimer(sEvent: pglClockEvent; sDuration: pglTimeStruct);
 Var
 I: Int32;
   Begin
     SetLength(Self.TempTimer, Length(Self.TempTimer) + 1);
     I := High(Self.TempTimer);
-    Self.TempTimer[i] := TPGLTimer.Create(sEvent,sDuration,False);
+    Self.TempTimer[i] := pglTimer.Create(sEvent,sDuration,False);
     Self.AddTimer(Self.TempTimer[i]);
     Self.TempTimer[i].Activate();
   End;
 
-Procedure TPGLClock.UnAssignAllTimers();
+Procedure pglClock.UnAssignAllTimers();
 Var
 I: Int32;
   Begin
@@ -472,12 +472,12 @@ I: Int32;
     SetLength(Self.TempTimer, 0);
   End;
 
-Procedure TPGLClock.PauseTimers();
+Procedure pglClock.PauseTimers();
   Begin
     Self.pareTimersPaused := True;
   End;
 
-Procedure TPGLClock.ResumeTimers(ResetTimers: Boolean = False);
+Procedure pglClock.ResumeTimers(ResetTimers: Boolean = False);
 Var
 I: Int32;
   Begin
@@ -503,7 +503,7 @@ I: Int32;
   End;
 
 
-Procedure TPGLClock.AddTrigger(Trigger: TPGLTimeTrigger);
+Procedure pglClock.AddTrigger(Trigger: pglTimeTrigger);
 Var
 I: Int32;
   Begin
@@ -516,7 +516,7 @@ I: Int32;
     Self.TriggerList[i] := Trigger;
   End;
 
-Procedure TPGLClock.RemoveTrigger(Trigger: TPGLTimeTrigger);
+Procedure pglClock.RemoveTrigger(Trigger: pglTimeTrigger);
 Var
 I,R: Int32;
   Begin
@@ -540,7 +540,7 @@ I,R: Int32;
     SetLength(Self.TriggerList, Length(Self.TriggerList) - 1);
   End;
 
-Procedure TPGLClock.HandleTriggers();
+Procedure pglClock.HandleTriggers();
 Var
 I: Int32;
   Begin
@@ -562,22 +562,22 @@ I: Int32;
   End;
 
 
-Function TPGLClock.GetTotalSeconds: Double;
+Function pglClock.GetTotalSeconds: Double;
   Begin
     Result := Self.TotalTime;
   End;
 
-Function TPGLClock.GetTotalMinutes: Double;
+Function pglClock.GetTotalMinutes: Double;
   Begin
     Result := TotalTime / 60;
   End;
 
-Function TPGLClock.GetTotalHours: Double;
+Function pglClock.GetTotalHours: Double;
   Begin
     Result := (TotalTime / 60) / 60;
   End;
 
-Procedure TPGLClock.AddTimer(Timer: TPGLTimer);
+Procedure pglClock.AddTimer(Timer: pglTimer);
 Var
 I: Int32;
   Begin
@@ -594,7 +594,7 @@ I: Int32;
     Timer.pIsAssigned := True;
   End;
 
-Procedure TPGLClock.RemoveTimer(Timer: TPGLTimer);
+Procedure pglClock.RemoveTimer(Timer: pglTimer);
 Var
 I,R: Int32;
 
@@ -623,7 +623,7 @@ I,R: Int32;
   End;
 
 
-Procedure TPGLClock.HandleTimers();
+Procedure pglClock.HandleTimers();
 Var
 I,R,T: Int32;
   Begin
@@ -667,14 +667,14 @@ I,R,T: Int32;
                            {plgTimeStruct}
 ////////////////////////////////////////////////////////////////////////////////
 
-Class Operator TPGLTimeStruct.Initialize(Out Dest: TPGLTimeStruct);
+Class Operator pglTimeStruct.Initialize(Out Dest: pglTimeStruct);
   Begin
     Dest.Seconds := 0;
     Dest.Minutes := 0;
     Dest.Hours := 0;
   End;
 
-Procedure TPGLTimeStruct.AddTime(Time: Double);
+Procedure pglTimeStruct.AddTime(Time: Double);
   Begin
 
     Self.Seconds := Self.Seconds + Time;
@@ -691,17 +691,17 @@ Procedure TPGLTimeStruct.AddTime(Time: Double);
 
   End;
 
-Function TPGLTimeStruct.ToString(): String;
+Function pglTimeStruct.ToString(): String;
   Begin
     Result := Self.Hours.ToString + ':' + Self.Minutes.ToString + ':' + Self.Seconds.ToString(ffFixed,4,2);
   End;
 
 
 ////////////////////////////////////////////////////////////////////////////////
-                              {TPGLTimer}
+                              {pglTimer}
 ////////////////////////////////////////////////////////////////////////////////
 
-Constructor TPGLTimer.Create(sEvent: pglClockEvent; sDuration: Double; sRepeat: Boolean);
+Constructor pglTimer.Create(sEvent: pglClockEvent; sDuration: Double; sRepeat: Boolean);
   Begin
     Self.pEvent := sEvent;
     Self.pDuration := sDuration;
@@ -709,7 +709,7 @@ Constructor TPGLTimer.Create(sEvent: pglClockEvent; sDuration: Double; sRepeat: 
     Self.pActive := False;
   End;
 
-Constructor TPGLTimer.Create(sEvent: pglClockEvent; sDuration: TPGLTimeStruct; sRepeat: Boolean);
+Constructor pglTimer.Create(sEvent: pglClockEvent; sDuration: pglTimeStruct; sRepeat: Boolean);
   Begin
     Self.pEvent := sEvent;
     Self.pRepeating := sRepeat;
@@ -720,7 +720,7 @@ Constructor TPGLTimer.Create(sEvent: pglClockEvent; sDuration: TPGLTimeStruct; s
     Self.pDuration := Self.pDuration + ((sDuration.Hours * 60) * 60);
   End;
 
-Function TPGLTimer.Update(InTime: Double): Boolean;
+Function pglTimer.Update(InTime: Double): Boolean;
   Begin
     Result := False;
 
@@ -745,30 +745,30 @@ Function TPGLTimer.Update(InTime: Double): Boolean;
     End;
   End;
 
-Procedure TPGLTimer.SetEvent(sEvent: pglClockEvent);
+Procedure pglTimer.SetEvent(sEvent: pglClockEvent);
   Begin
     Self.pEvent := sEvent;
   End;
 
-Procedure TPGLTimer.SetDuration(sDuration: Double);
+Procedure pglTimer.SetDuration(sDuration: Double);
   Begin
     Self.pDuration := sDuration;
   end;
 
-Procedure TPGLTimer.SetDuration(sDuration: TPGLTimeStruct);
+Procedure pglTimer.SetDuration(sDuration: pglTimeStruct);
   Begin
     Self.pDuration := sDuration.Seconds;
     Self.pDuration := Self.pDuration + (sDuration.Minutes * 60);
     Self.pDuration := Self.pDuration + ((sDuration.Hours * 60) * 60);
   End;
 
-Procedure TPGLTimer.SetRepeating(sRepeat: Boolean = True);
+Procedure pglTimer.SetRepeating(sRepeat: Boolean = True);
   Begin
     Self.pRepeating := sRepeat;
   End;
 
 
-Procedure TPGLTimer.UnAssign();
+Procedure pglTimer.UnAssign();
   Begin
     Self.pisAssigned := False;
     Self.pActive := False;
@@ -776,57 +776,57 @@ Procedure TPGLTimer.UnAssign();
     Self.pSignalUnAssign := True;
   End;
 
-Procedure TPGLTimer.Activate();
+Procedure pglTimer.Activate();
   Begin
     Self.pActive := True;
     Self.pTimeRemaining := Self.pDuration;
   End;
 
-Procedure TPGLTimer.DeActivate();
+Procedure pglTimer.DeActivate();
   Begin
     If Self.pisAssigned = False Then Exit;
 
     Self.pActive := False;
   End;
 
-Procedure TPGLTimer.ResetTime();
+Procedure pglTimer.ResetTime();
   Begin
     Self.pTimeRemaining := Self.pDuration;
   End;
 
-Function TPGLTimer.TimePassed(): TPGLTimeStruct;
+Function pglTimer.TimePassed(): pglTimeStruct;
   Begin
     Result.AddTime(Self.pDuration - Self.pTimeRemaining);
   End;
 
 ////////////////////////////////////////////////////////////////////////////////
-                           {TPGLTimeTrigger}
+                           {pglTimeTrigger}
 ////////////////////////////////////////////////////////////////////////////////
 
-Constructor TPGLTimeTrigger.Create(sEvent: pglClockEvent; sTriggerTime: TPGLTimeStruct; sTriggerOnNow: Boolean = False);
+Constructor pglTimeTrigger.Create(sEvent: pglClockEvent; sTriggerTime: pglTimeStruct; sTriggerOnNow: Boolean = False);
   Begin
     Self.pEvent := sEvent;
     Self.pTriggerTime := sTriggerTime;
     Self.pTriggerOnNow := sTriggerOnNow;
   End;
 
-Procedure TPGLTimeTrigger.Activate();
+Procedure pglTimeTrigger.Activate();
   Begin
     Self.pisActive := True;
   End;
 
-Procedure TPGLTimeTrigger.Deactivate();
+Procedure pglTimeTrigger.Deactivate();
   Begin
     Self.pisActive := False;
   End;
 
-Procedure TPGLTimeTrigger.UnAssign();
+Procedure pglTimeTrigger.UnAssign();
   Begin
     Self.pisActive := False;
     Self.pUnAssignSignal := True;
   End;
 
-Function TPGLTimeTrigger.Update(sTime: TPGLTimeStruct): Boolean;
+Function pglTimeTrigger.Update(sTime: pglTimeStruct): Boolean;
   Begin
     Result := False;
 
@@ -852,7 +852,7 @@ Function TPGLTimeTrigger.Update(sTime: TPGLTimeStruct): Boolean;
 
 Initialization
   Begin
-    TimeInstance := TPGLTimeInstance.Create();
+    TimeInstance := pglTimeInstance.Create();
   End;
 
 end.

@@ -1364,7 +1364,8 @@ uses
   procedure pglSetEllipseInterval(Interval: GLInt = 10); register;
 
   function ImageDesc(Source: Pointer; Width,Height: GLUInt): TPGLImageDescriptor; register;
-  function pglPixelFromMemory(Source: Pointer; X,Y,Width,Height: GLInt): TPGLColorI; register;
+  function PGLPixelFromMemory(Source: Pointer; X,Y,Width,Height: GLInt): TPGLColorI; register;
+
 
   function FindTextLineBreak(Var Text:String): Integer; register;
   function FindTextTags(Var Text:String): TPGLTextTagArray; register;
@@ -1393,9 +1394,11 @@ uses
   procedure TransformToBuffer(Out Points: TPGLVectorQuad; BuffWidth,BuffHeight: GLFloat); register;
   procedure TransformToTexture(Out Points: TPGLVectorQuad; TexWidth,TexHeight: GLFloat); register;
 
+
+
   // Shader functions
-  function pglGetUniform(Uniform: String): GLInt; register;
-  procedure pglUseProgram(ShaderProgramName: String); register;
+  function PGLGetUniform(Uniform: String): GLInt; register;
+  procedure PGLUseProgram(ShaderProgramName: String); register;
 
 Var
 

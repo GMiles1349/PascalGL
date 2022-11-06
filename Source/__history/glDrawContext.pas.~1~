@@ -31,17 +31,25 @@ Uses
 
   (* Structs *)
 
-  type TPGLAttribs = Record
+  type RAWINPUTDEVICE = Record
+    hDevice: LONGWORD;
+    dwType: DWORD;
+  End;
+
+  type tagRAWINPUTDEVICELIST = Array of RAWINPUTDEVICE;
+
+
+  type pglAttribs = Record
 
     Public
       Count: GLInt;
       Attribs: Array of GLInt;
 
-      Class Operator Initialize(Out Dest: TPGLAttribs);
+      Class Operator Initialize(Out Dest: pglAttribs);
       Procedure AddAttribs(Values: Array of GLInt);
   End;
 
-  Type TPGLWindowFormat = Record
+  Type pglWindowFormat = Record
       ColorBits: GLUint;
       DepthBits: GLUInt;
       StencilBits: GLUInt;
@@ -52,12 +60,12 @@ Uses
       TitleBar: Boolean;
       Maximize: Boolean;
 
-      Class Operator Initialize( Out Dest: TPGLWindowFormat); Register;
+      Class Operator Initialize( Out Dest: pglWindowFormat); Register;
   End;
 
-  Type PPGLWindowFormat = ^TPGLWindowFormat;
+    Type PpglWindowFormat = ^pglWindowFormat;
 
-  Type TPGLFeatureSettings = Record
+  Type pglFeatureSettings = Record
     UseKeyBoardInput: Boolean;
     UseCharacterInput: Boolean;
     UseMouseInput: Boolean;
@@ -66,15 +74,15 @@ Uses
     OpenGLCompatibilityContext: Boolean;
     OpenGLDebugContext: Boolean;
 
-    Class Operator Initialize (Out Dest: TPGLFeatureSettings); Register;
+    Class Operator Initialize (Out Dest: pglFeatureSettings); Register;
   End;
 
-  Type PPGLFeatureSettings = ^TPGLFeatureSettings;
+    Type PpglFeatureSettings = ^pglFeatureSettings;
 
 
   (* Classes *)
 
-  Type TPGLIcon = Record
+  Type pglIcon = Record
     Private
       wIcon: HICON;
       wWidth,wHeight: GLUint;
@@ -93,7 +101,7 @@ Uses
       Function Destroy(): Boolean; Register;
   End;
 
-  Type TPGLKeyboard = Class(TObject)
+  Type pglKeyBoardInstance = Class(TObject)
     Private
       KeyDown: pglKeyCallBack;
       KeyUp: pglKeyCallBack;
@@ -133,7 +141,7 @@ Uses
   End;
 
 
-  Type TPGLMouse = Class(TObject)
+  Type pglMouseInstance = Class(TObject)
     Private
       MouseDownCallBack: pglMouseCallBack;
       MouseUpCallBack: pglMouseCallBack;
@@ -156,7 +164,7 @@ Uses
       wScale: Boolean;
 
       Cursor: HICON;
-      IconSource: ^TPGLIcon;
+      IconSource: ^pglIcon;
 
       Procedure ReturnToLock(); Register;
 
@@ -180,7 +188,7 @@ Uses
       Property Button3: Integer read wButton[3];
       Property Button4: Integer read wButton[4];
 
-//      Class Operator Initialize(Out Dest: TPGLMouse); Register;
+//      Class Operator Initialize(Out Dest: pglMouseInstance); Register;
       Constructor Create();
 
       Procedure SetVisible(Enable: Boolean = True); Register;
@@ -191,7 +199,7 @@ Uses
       Procedure SetMouseLock(X,Y: Single; Locked: Boolean = True); Register;
       Procedure SetCursorFromFile(FileName: String; HotSpotX: GLUint = 0; HotSpotY: GLUint = 0); Register;
       Procedure SetCursorFromBits(Source: Pointer; Width,Height,BPP: GLUint; HotSpotX: GLUint = 0; HotSpotY: GLUint = 0); Register;
-      Procedure SetCursorFromIcon(Var Source: TPGLIcon); Register;
+      Procedure SetCursorFromIcon(Var Source: pglIcon); Register;
       Procedure ScaleToResolution(Enable: Boolean = True); Register;
 
       Procedure RegisterLeaveCallBack(Proc: pglCallBack); Register;
@@ -204,7 +212,7 @@ Uses
   End;
 
 
-  Type TPGLController = Class(TObject)
+  Type pglControllerInstance = Class(TObject)
 
     Private
       Enabled: Boolean;
@@ -256,7 +264,7 @@ Uses
   End;
 
 
-  Type TPGLContext = Class(TObject)
+  Type pglContext = Class(TObject)
 
     Private
 
@@ -268,7 +276,7 @@ Uses
       wMajVersion: GLInt;
       wMinVersion: GLint;
       wMultiSampled: Boolean;
-      wFeatures: TPGLFeatureSettings;
+      wFeatures: pglFeatureSettings;
       wDebugToConsole: Boolean;
       wDebugToLog: Boolean;
       wDebugToMsgBox: Boolean;
@@ -296,7 +304,7 @@ Uses
       wScreenWidth, wScreenHeight: GLUint;
       wHasStencil: Boolean;
       wHasDepth: Boolean;
-      wFormat: TPGLWindowFormat;
+      wFormat: pglWindowFormat;
 
       // Status
       wIsMaxed: Boolean;
@@ -312,12 +320,13 @@ Uses
       wStyleChanged: Boolean;
 
       // Functionality Flags
-      wKeyBoard: TPGLKeyboard;
-      wMouse: TPGLMouse;
-      wController: TPGLController;
+      wKeyBoard: pglKeyBoardInstance;
+      wMouse: pglMouseInstance;
+      wController: pglControllerInstance;
       wUseKeyInput: Boolean;
       wUseCharacterInput: Boolean;
       wUseMouseInput: Boolean;
+      wDeviceList: tagRAWINPUTDEVICELIST;
       wNumDevices: PUINT;
       wDevicesSize: UINT;
 
@@ -362,7 +371,7 @@ Uses
       Property ShouldClose: Boolean read wShouldClose;
       Property ScreenWidth: GLUint read wScreenWidth;
       Property ScreenHeight: GLUint read wScreenHeight;
-      Property Format: TPGLWindowFormat read wFormat;
+      Property Format: pglWindowFormat read wFormat;
       Property IsMaxed: Boolean read wIsMaxed;
       Property IsMinimized: Boolean read wIsMinimized;
       Property HasCaption: Boolean read wHasCaption;
@@ -374,9 +383,9 @@ Uses
       Property FullScreen: Boolean read wFullScreen;
       Property Margins: TMargins read wMargins;
       Property DebugLogMessageCount: GLInt read wDebugCount;
-      Property Keyboard: TPGLKeyboard read wKeyBoard;
-      Property Mouse: TPGLMouse read wMouse;
-      Property Controller: TPGLController read wController;
+      Property Keyboard: pglKeyBoardInstance read wKeyBoard;
+      Property Mouse: pglMouseInstance read wMouse;
+      Property Controller: pglControllerInstance read wController;
 
       Constructor Create();
 
@@ -417,7 +426,7 @@ Uses
 
   (* PROCEDURES *)
 
-  Procedure pglStart(Width,Height: GLUint; Format: TPGLWindowFormat; Features: TPGLFeatureSettings; Title: String); stdcall; cdecl;
+  Procedure pglStart(Width,Height: GLUint; Format: pglWindowFormat; Features: pglFeatureSettings; Title: String); stdcall; cdecl;
   Procedure CreateGLContext(); Register;
   Procedure CheckGLStatus(); Register;
   Function WindowProc(Handle: HWND; Messages: Cardinal; wParameter: WPARAM; lParameter: LPARAM): LRESULT; cdecl; stdcall;
@@ -425,7 +434,7 @@ Uses
   Procedure ReturnDisplayMode(); Register;
 
   Function ReturnPFDFlags(): Integer; Register;
-  Function ReturnARBPixelFormat(): TPGLAttribs; Register;
+  Function ReturnARBPixelFormat(): pglAttribs; Register;
   function ConstructContextAttributes(Maj,Min: Integer): HGLRC; Register;
   Procedure UpdatePixelFormat(DC: HDC; PixelID: Integer); Register;
 
@@ -433,9 +442,9 @@ Uses
   Procedure GetKeyUp(Var Value: wParam); Register;
 
 
-  Function pglCreateIcon(SourceIcon: HICON): TPGLIcon; Register;
-  Function pglCreateIconFromFile(FileName: String; HotSpotX: GLUint = 0; HotSpotY: GLUint = 0): TPGLIcon; Register;
-  Function pglCreateIconFromPointer(Source: Pointer; Width,Height,BPP: GLUInt; HotSpotX: GLUint = 0; HotSpotY: GLUint = 0): TPGLIcon; Register;
+  Function pglCreateIcon(SourceIcon: HICON): pglIcon; Register;
+  Function pglCreateIconFromFile(FileName: String; HotSpotX: GLUint = 0; HotSpotY: GLUint = 0): pglIcon; Register;
+  Function pglCreateIconFromPointer(Source: Pointer; Width,Height,BPP: GLUInt; HotSpotX: GLUint = 0; HotSpotY: GLUint = 0): pglIcon; Register;
 
   function GET_X_LPARAM(lParam: NativeInt): Integer;
   function GET_Y_LPARAM(lParam: NativeInt): Integer;
@@ -448,7 +457,7 @@ Uses
 
 
 Var
-  Context: TPGLContext;
+  Context: pglContext;
   EXEPath: String;
   RDC: HGLRC;
   WC: WNDCLASSEX;
@@ -485,14 +494,14 @@ Procedure StringHelper.Add(Val: string);
   End;
 
 
-(*------------------------------TPGLAttribs------------------------------------*)
+(*------------------------------pglAttribs------------------------------------*)
 
-Class Operator TPGLAttribs.Initialize(Out Dest: TPGLAttribs);
+Class Operator pglAttribs.Initialize(Out Dest: pglAttribs);
   Begin
     Dest.Count := 0;
   End;
 
-Procedure TPGLAttribs.AddAttribs(Values: Array of GLint);
+Procedure pglAttribs.AddAttribs(Values: Array of GLint);
 Var
 I: LongInt;
   Begin
@@ -503,9 +512,9 @@ I: LongInt;
     End;
   End;
 
-(*------------------------------TPGLWindowFormat-------------------------------*)
+(*------------------------------pglWindowformat-------------------------------*)
 
-Class Operator TPGLWindowFormat.Initialize( Out Dest: TPGLWindowFormat); Register;
+Class Operator pglWindowformat.Initialize( Out Dest: pglWindowFormat); Register;
   Begin
     Dest.ColorBits := 32;
     Dest.DepthBits := 24;
@@ -518,9 +527,9 @@ Class Operator TPGLWindowFormat.Initialize( Out Dest: TPGLWindowFormat); Registe
     Dest.Maximize := False;
   End;
 
-(*------------------------------TPGLFeatureSettings----------------------------*)
+(*------------------------------pglFeatureSettings----------------------------*)
 
-Class Operator TPGLFeatureSettings.Initialize( Out Dest: TPGLFeatureSettings);
+Class Operator pglFeatureSettings.Initialize( Out Dest: pglFeatureSettings);
   Begin
     Dest.UseKeyBoardInput := True;
     Dest.UseCharacterInput := True;
@@ -538,7 +547,7 @@ Class Operator TPGLFeatureSettings.Initialize( Out Dest: TPGLFeatureSettings);
 ////////////////////////////////////////////////////////////////////////////////
 
 
-Procedure TPGLIcon.SetTransparent(Color: WORD);
+Procedure pglIcon.SetTransparent(Color: WORD);
 Var
 ICINFO: ICONINFO;
 NEWICON: ICONINFO;
@@ -617,7 +626,7 @@ I,Z: Integer;
   end;
 
 
-Procedure TPGLIcon.ChangeHotSpot(HotSpotX: Cardinal; HotSpotY: Cardinal);
+Procedure pglIcon.ChangeHotSpot(HotSpotX: Cardinal; HotSpotY: Cardinal);
 Var
 ICINFO: ICONINFO;
 NEWICON: ICONINFO;
@@ -648,7 +657,7 @@ BM: BITMAP;
   End;
 
 
-Procedure TPGLIcon.ChangeSize(Width: Cardinal; Height: Cardinal);
+Procedure pglIcon.ChangeSize(Width: Cardinal; Height: Cardinal);
 Var
 ICINFO: ICONINFO;
 NEWICON: ICONINFO;
@@ -678,7 +687,7 @@ BM: BITMAP;
   End;
 
 
-Function TPGLIcon.Destroy(): Boolean;
+Function pglIcon.Destroy(): Boolean;
   Begin
     Result := False;
     Result := DestroyIcon(Self.wIcon);
@@ -706,22 +715,22 @@ Function TPGLIcon.Destroy(): Boolean;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-(*                          TPGLKeyboard                               *)
+(*                          pglKeyBoardInstance                               *)
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 
-Constructor TPGLKeyboard.Create();
+Constructor pglKeyBoardInstance.Create();
   Begin
     Inherited;
   End;
 
-Function TPGLKeyboard.GetKeyState(Index: Integer): Integer;
+Function pglKeyBoardInstance.GetKeyState(Index: Integer): Integer;
   Begin
     Result := Context.KeyBoard.Key[Index];
   End;
 
-Procedure TPGLKeyboard.SwapChars();
+Procedure pglKeyBoardInstance.SwapChars();
 Var
 I: Long;
   Begin
@@ -736,7 +745,7 @@ I: Long;
     Self.wCharCount := 0;
   End;
 
-Function TPGLKeyboard.CheckKeyCombo(Keys: array of NativeInt): Boolean; Register;
+Function pglKeyBoardInstance.CheckKeyCombo(Keys: array of NativeInt): Boolean; Register;
 Var
 FoundCount: Long;
 KeyVals: Array of NativeInt;
@@ -766,43 +775,43 @@ I: Long;
     End;
   End;
 
-Function TPGLKeyboard.GetChars(): String;
+Function pglKeyBoardInstance.GetChars(): String;
   Begin
     Result := Self.wChars;
   End;
 
-Procedure TPGLKeyboard.SendKeyPress(Key: NativeUInt);
+Procedure pglKeyBoardInstance.SendKeyPress(Key: NativeUInt);
   Begin
     If Key < 256 Then Begin
       Self.KeyPress(Key,Self.Shift,Self.Alt);
     End;
   End;
 
-Procedure TPGLKeyboard.RegisterKeyDownCallBack(Proc: pglKeyCallBack);
+Procedure pglKeyBoardInstance.RegisterKeyDownCallBack(Proc: pglKeyCallBack);
   Begin
     If Context.wFeatures.UseKeyBoardInput = False Then Exit;
     Self.KeyDown := Proc;
   End;
 
-Procedure TPGLKeyboard.RegisterKeyPressCallBack(Proc: pglKeyCallBack);
+Procedure pglKeyBoardInstance.RegisterKeyPressCallBack(Proc: pglKeyCallBack);
   Begin
     If Context.wFeatures.UseKeyBoardInput = False Then Exit;
     Self.KeyPress := Proc;
   End;
 
-Procedure TPGLKeyboard.RegisterKeyHeldCallBack(Proc: pglKeyCallBack);
+Procedure pglKeyBoardInstance.RegisterKeyHeldCallBack(Proc: pglKeyCallBack);
   Begin
     If Context.wFeatures.UseKeyBoardInput = False Then Exit;
     Self.KeyHeld := Proc;
   End;
 
-Procedure TPGLKeyboard.RegisterKeyUpCallBack(Proc: pglKeyCallBack);
+Procedure pglKeyBoardInstance.RegisterKeyUpCallBack(Proc: pglKeyCallBack);
   Begin
     If Context.wFeatures.UseKeyBoardInput = False Then Exit;
     Self.KeyUp := Proc;
   End;
 
-Procedure TPGLKeyboard.RegisterKeyCharCallBack(Proc: pglKeyCharCallBack);
+Procedure pglKeyBoardInstance.RegisterKeyCharCallBack(Proc: pglKeyCharCallBack);
   Begin
     If Context.wFeatures.UseCharacterInput = False Then Exit;
     Self.CharCallBack := Proc;
@@ -811,24 +820,24 @@ Procedure TPGLKeyboard.RegisterKeyCharCallBack(Proc: pglKeyCharCallBack);
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-(*                          TPGLMouse                                  *)
+(*                          pglMouseInstance                                  *)
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 
-//Class Operator TPGLMouse.Initialize(Out Dest: TPGLMouse);
+//Class Operator pglMouseInstance.Initialize(Out Dest: pglMouseInstance);
 //  Begin
 //    Dest.wVisible := True;
 //    Dest.wInWindow := True;
 //  End;
 
-Constructor TPGLMouse.Create();
+Constructor pglMouseInstance.Create();
   Begin
     Self.wVisible := True;
     Self.wInWindow := True;
   End;
 
-Procedure TPGLMouse.SetVisible(Enable: Boolean = True);
+Procedure pglMouseInstance.SetVisible(Enable: Boolean = True);
   Begin
 
     If Enable = Self.Visible Then Exit;
@@ -844,7 +853,7 @@ Procedure TPGLMouse.SetVisible(Enable: Boolean = True);
   End;
 
 
-Procedure TPGLMouse.MovePosition(X,Y: Single);
+Procedure pglMouseInstance.MovePosition(X,Y: Single);
 // Move the mouse position by X and Y
 Var
 wParVal: wParam;
@@ -865,7 +874,7 @@ XVal,YVal: Word;
     PostMessage(Context.Handle,WM_MOUSEMOVE,wParVal, MakeLParam(XVal,YVal));
   End;
 
-Procedure TPGLMouse.SetPosition(X: Single; Y: Single);
+Procedure pglMouseInstance.SetPosition(X: Single; Y: Single);
 // Set the mouse position to X and Y
 Var
 CP: TPOINT;
@@ -877,7 +886,7 @@ CP: TPOINT;
     SetCursorPos(CP.X, CP.Y);
   End;
 
-Procedure TPGLMouse.SendButtonClick(ButtonIndex: Byte);
+Procedure pglMouseInstance.SendButtonClick(ButtonIndex: Byte);
 //Use to send a button down callback without changing the value of the mouse button
   Begin
     If ButtonIndex < 4 Then Begin
@@ -887,7 +896,7 @@ Procedure TPGLMouse.SendButtonClick(ButtonIndex: Byte);
     End;
   End;
 
-Procedure TPGLMouse.ReleaseButton(ButtonIndex: Byte);
+Procedure pglMouseInstance.ReleaseButton(ButtonIndex: Byte);
 //Use to send a button up callback without changing the value of the mouse button
   Begin
     If ButtonIndex < 4 Then Begin
@@ -897,7 +906,7 @@ Procedure TPGLMouse.ReleaseButton(ButtonIndex: Byte);
     End;
   End;
 
-Function TPGLMouse.InWindow(): Boolean;
+Function pglMouseInstance.InWindow(): Boolean;
   Begin
 
     If wScreenX >= Context.wWindowRect.Left Then Begin
@@ -936,7 +945,7 @@ Function TPGLMouse.InWindow(): Boolean;
 
   End;
 
-Procedure TPGLMouse.SetMouseLock(X: Single; Y: Single; Locked: Boolean = True);
+Procedure pglMouseInstance.SetMouseLock(X: Single; Y: Single; Locked: Boolean = True);
 Var
 MP: TPOINT;
   Begin
@@ -949,14 +958,14 @@ MP: TPOINT;
     End;
   End;
 
-Procedure TPGLMouse.ReturnToLock();
+Procedure pglMouseInstance.ReturnToLock();
 Var
 MP: TPOINT;
   Begin
     Self.SetPosition(Self.wLockX, Self.wLockY);
   End;
 
-Procedure TPGLMouse.SetCursorFromFile(FileName: String; HotSpotX: GLUint = 0; HotSpotY: GLUint = 0);
+Procedure pglMouseInstance.SetCursorFromFile(FileName: String; HotSpotX: GLUint = 0; HotSpotY: GLUint = 0);
 Var
 Image: Pointer;
 Width,Height,Channels: GLInt;
@@ -967,7 +976,7 @@ Width,Height,Channels: GLInt;
   End;
 
 
-Procedure TPGLMouse.SetCursorFromBits(Source: Pointer; Width,Height,BPP: GLUint; HotSpotX: GLUint = 0; HotSpotY: GLUint = 0);
+Procedure pglMouseInstance.SetCursorFromBits(Source: Pointer; Width,Height,BPP: GLUint; HotSpotX: GLUint = 0; HotSpotY: GLUint = 0);
 Var
 IconStruct: _ICONINFO;
 Icon: HICON;
@@ -1040,7 +1049,7 @@ UseLen: GLInt;
 
   End;
 
-Procedure TPGLMouse.SetCursorFromIcon(Var Source: TPGLIcon);
+Procedure pglMouseInstance.SetCursorFromIcon(Var Source: pglIcon);
   Begin
     Self.Cursor := Source.Icon;
     SetCursor(Self.Cursor);
@@ -1051,35 +1060,35 @@ Procedure TPGLMouse.SetCursorFromIcon(Var Source: TPGLIcon);
   End;
 
 
-Procedure TPGLMouse.ScaleToResolution(Enable: Boolean = True);
+Procedure pglMouseInstance.ScaleToResolution(Enable: Boolean = True);
   Begin
     Self.wScale := Enable;
   End;
 
-Procedure TPGLMouse.RegisterMouseDownCallBack(Proc: pglMouseCallBack);
+Procedure pglMouseInstance.RegisterMouseDownCallBack(Proc: pglMouseCallBack);
   Begin
     If Context.wFeatures.UseMouseInput = False Then Exit;
     Context.wMouse.MouseDownCallBack := Proc;
   End;
 
-Procedure TPGLMouse.RegisterMouseUpCallBack(Proc: pglMouseCallBack);
+Procedure pglMouseInstance.RegisterMouseUpCallBack(Proc: pglMouseCallBack);
   Begin
     If Context.wFeatures.UseMouseInput = False Then Exit;
     Context.wMouse.MouseUpCallBack := Proc;
   End;
 
-Procedure TPGLMouse.RegisterMouseMoveCallBack(Proc: pglMouseCallBack);
+Procedure pglMouseInstance.RegisterMouseMoveCallBack(Proc: pglMouseCallBack);
   Begin
     If Context.wFeatures.UseMouseInput = False Then Exit;
     Context.wMouse.MouseMoveCallBack := Proc;
   End;
 
-Procedure TPGLMouse.RegisterLeaveCallBack(Proc: pglCallBack);
+Procedure pglMouseInstance.RegisterLeaveCallBack(Proc: pglCallBack);
   Begin
     Self.LeaveCallBack := Proc;
   End;
 
-procedure TPGLMouse.RegisterEnterCallBack(Proc: pglCallBack);
+procedure pglMouseInstance.RegisterEnterCallBack(Proc: pglCallBack);
   Begin
     Self.EnterCallBack := Proc;
   End;
@@ -1090,7 +1099,7 @@ procedure TPGLMouse.RegisterEnterCallBack(Proc: pglCallBack);
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-Constructor TPGLController.Create();
+Constructor pglControllerInstance.Create();
   Begin
     Inherited;
     Self.Enabled := XInputAvailable();
@@ -1112,7 +1121,7 @@ Constructor TPGLController.Create();
     end;
   End;
 
-Procedure TPGLController.HandleStateChange(sender:TObject;userIndex:uint32;newState:TXInputState);
+Procedure pglControllerInstance.HandleStateChange(sender:TObject;userIndex:uint32;newState:TXInputState);
   Begin
     If Assigned(Self.StateChangeCallBack) Then Begin
       Self.StateChangeCallBack(Self.LeftStick, Self.RightStick,
@@ -1121,17 +1130,17 @@ Procedure TPGLController.HandleStateChange(sender:TObject;userIndex:uint32;newSt
 
   End;
 
-Procedure TPGLController.HandleConnect(sender:TObject;userIndex:uint32);
+Procedure pglControllerInstance.HandleConnect(sender:TObject;userIndex:uint32);
   Begin
 
   End;
 
-Procedure TPGLController.HandleDisconnect(sender:TObject;userIndex:uint32);
+Procedure pglControllerInstance.HandleDisconnect(sender:TObject;userIndex:uint32);
   Begin
 
   End;
 
-Procedure TPGLController.HandleButtonDown(sender:TObject;userIndex:uint32;buttons:word);
+Procedure pglControllerInstance.HandleButtonDown(sender:TObject;userIndex:uint32;buttons:word);
 Var
 I: Long;
 Hi,Lo: Byte;
@@ -1156,7 +1165,7 @@ Value: Word;
     End;
   End;
 
-Procedure TPGLController.HandleButtonUp(sender:TObject;userIndex:uint32;buttons:word);
+Procedure pglControllerInstance.HandleButtonUp(sender:TObject;userIndex:uint32;buttons:word);
 Var
 I: Long;
 Hi,Lo: Byte;
@@ -1181,12 +1190,12 @@ Value: Word;
     End;
   End;
 
-Procedure TPGLController.HandleButtonPress(sender:TObject;userIndex:uint32;buttons:word);
+Procedure pglControllerInstance.HandleButtonPress(sender:TObject;userIndex:uint32;buttons:word);
   Begin
 
   End;
 
-Procedure TPGLController.HandleStickHeld();
+Procedure pglControllerInstance.HandleStickHeld();
   Begin
     If Assigned(Self.StickCallBack) Then Begin
       Self.QueryState();
@@ -1194,28 +1203,28 @@ Procedure TPGLController.HandleStickHeld();
     End;
   End;
 
-Procedure TPGLController.RegisterButtonDownCallBack(Proc: pglControllerButtonCallBack);
+Procedure pglControllerInstance.RegisterButtonDownCallBack(Proc: pglControllerButtonCallBack);
   Begin
     Self.ButtonDownCallBack := Proc;
   End;
 
-Procedure TPGLController.RegisterButtonUpCallBack(Proc: pglControllerButtonCallBack);
+Procedure pglControllerInstance.RegisterButtonUpCallBack(Proc: pglControllerButtonCallBack);
   Begin
     Self.ButtonUpCallBack := Proc;
   End;
 
-Procedure TPGLController.RegisterStateChangeCallBack(Proc: pglControllerStateCallBack);
+Procedure pglControllerInstance.RegisterStateChangeCallBack(Proc: pglControllerStateCallBack);
   Begin
     Self.StateChangeCallBack := Proc;
   End;
 
-Procedure TPGLController.RegisterStickHeldCallBack(Proc: pglControllerStickCallBack);
+Procedure pglControllerInstance.RegisterStickHeldCallBack(Proc: pglControllerStickCallBack);
   Begin
     Self.StickCallBack := Proc;
   End;
 
 
-Procedure TPGLController.QueryState();
+Procedure pglControllerInstance.QueryState();
   Begin
     XInput.refresh();
     XInput.llGetState(0,@Self.State);
@@ -1230,17 +1239,17 @@ Procedure TPGLController.QueryState();
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-(*                                TPGLContext                                  *)
+(*                                pglContext                                  *)
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 
-Constructor TPGLContext.Create();
+Constructor pglContext.Create();
   Begin
 
   End;
 
-Procedure TPGLContext.PollEvents();
+Procedure pglContext.PollEvents();
 Var
 Messages: MSG;
 I: Long;
@@ -1297,7 +1306,7 @@ P: TPOINT;
   End;
 
 
-Function TPGLContext.ProcessKeyBoardMessages(Var Handle: HWND; Var Messages: Cardinal; Var wParameter: WPARAM; Var lParameter: LPARAM): LRESULT;
+Function pglContext.ProcessKeyBoardMessages(Var Handle: HWND; Var Messages: Cardinal; Var wParameter: WPARAM; Var lParameter: LPARAM): LRESULT;
   Begin
 
     Result := 0;
@@ -1331,7 +1340,7 @@ Function TPGLContext.ProcessKeyBoardMessages(Var Handle: HWND; Var Messages: Car
   End;
 
 
-Function TPGLContext.ProcessMouseMessages(Var Handle: HWND; Var Messages: Cardinal; Var wParameter: WPARAM; Var lParameter: LPARAM): LRESULT;
+Function pglContext.ProcessMouseMessages(Var Handle: HWND; Var Messages: Cardinal; Var wParameter: WPARAM; Var lParameter: LPARAM): LRESULT;
 Var
 P1,P2: TPOINT;
 ButtonVal: Integer;
@@ -1452,7 +1461,7 @@ ButtonVal: Integer;
   End;
 
 
-Function TPGLContext.ProcessCharMessages(Var Handle: HWND; Var Messages: Cardinal; Var wParameter: WPARAM; Var lParameter: LPARAM): LRESULT;
+Function pglContext.ProcessCharMessages(Var Handle: HWND; Var Messages: Cardinal; Var wParameter: WPARAM; Var lParameter: LPARAM): LRESULT;
 
 Var
 Chr: String;
@@ -1492,13 +1501,13 @@ BS,Ent,Esc: Boolean;
   End;
 
 
-Procedure TPGLContext.GetInputDevices();
+Procedure pglContext.GetInputDevices();
   Begin
 
   End;
 
 
-Procedure TPGLContext.UpdateRects();
+Procedure pglContext.UpdateRects();
 Var
 R: Integer;
 wRect: TRECT;
@@ -1519,7 +1528,7 @@ Success: LongBool;
   End;
 
 
-Procedure TPGLContext.RestoreStyleFlags();
+Procedure pglContext.RestoreStyleFlags();
 Var
 Flags: NativeInt;
 wRect: TRECT;
@@ -1558,7 +1567,7 @@ wRect: TRECT;
     SetWindowPos(Self.Handle,HWND_TOP,0,0,wRect.Width,wRect.Height, SWP_NOMOVE or SWP_DRAWFRAME or SWP_FRAMECHANGED or SWP_SHOWWINDOW);
   End;
 
-Procedure TPGLContext.Close();
+Procedure pglContext.Close();
   Begin
     ReturnDisplayMode();
     Self.CleanUp();
@@ -1566,13 +1575,13 @@ Procedure TPGLContext.Close();
     SendMessage(Self.Handle,WM_QUIT,0,0);
   End;
 
-Procedure TPGLContext.SetTitle(Text: String);
+Procedure pglContext.SetTitle(Text: String);
   Begin
     Self.wTitle := Text;
     SetWindowText(Self.Handle,Self.wTitle);
   End;
 
-Procedure TPGLContext.SetIconFromFile(FileName: String);
+Procedure pglContext.SetIconFromFile(FileName: String);
 Var
 Image: Pointer;
 Width,Height, Channels: GLInt;
@@ -1584,7 +1593,7 @@ BPP: GLInt;
     stbi_image_free(Image);
   End;
 
-Procedure TPGLContext.SetIconFromBits(Source: Pointer; Width,Height,BPP: GLUint);
+Procedure pglContext.SetIconFromBits(Source: Pointer; Width,Height,BPP: GLUint);
 Var
 IconStruct: _ICONINFO;
 BitMap: HBITMAP;
@@ -1654,7 +1663,7 @@ UseLen: GLInt;
 
   End;
 
-Procedure TPGLContext.SetPosition(X: Cardinal; Y: Cardinal);
+Procedure pglContext.SetPosition(X: Cardinal; Y: Cardinal);
   Begin
     If Self.FullScreen = True Then Exit;
 
@@ -1664,7 +1673,7 @@ Procedure TPGLContext.SetPosition(X: Cardinal; Y: Cardinal);
       SWP_SHOWWINDOW);
   End;
 
-Procedure TPGLContext.SetSize(W: GLInt; H: GLInt; KeepCentered: Boolean = True);
+Procedure pglContext.SetSize(W: GLInt; H: GLInt; KeepCentered: Boolean = True);
 Var
 NewX,NewY: GLInt;
 CenterX,CenterY: GLInt;
@@ -1704,53 +1713,53 @@ wRect: TRECT;
     SetWindowPos(Self.Handle,HWND_TOP,NewX,NewY,wRect.Width,wRect.Height,Flags);
   End;
 
-Procedure TPGLContext.Maximize();
+Procedure pglContext.Maximize();
   Begin
     If Self.FullScreen = True Then Exit;
     SendMessage(Self.Handle,WM_SYSCOMMAND,SC_MAXIMIZE,0);
   End;
 
-Procedure TPGLContext.Restore();
+Procedure pglContext.Restore();
   Begin
     SendMessage(Self.Handle,WM_SYSCOMMAND,SC_RESTORE,0);
   End;
 
-Procedure TPGLContext.Minimize();
+Procedure pglContext.Minimize();
   Begin
     SendMessage(Self.Handle,WM_SYSCOMMAND,SC_MINIMIZE,0);
   End;
 
-Procedure TPGLContext.SetHasCaption(Enable: Boolean = True);
+Procedure pglContext.SetHasCaption(Enable: Boolean = True);
   Begin
     Context.wHasCaption := Enable;
     Self.wStyleChanged := True;
   End;
 
-Procedure TPGLContext.SetHasMenu(Enable: Boolean = True);
+Procedure pglContext.SetHasMenu(Enable: Boolean = True);
   Begin
     Context.wHasMenu := Enable;
     Self.wStyleChanged := True;
   End;
 
-Procedure TPGLContext.SetHasMaximize(Enable: Boolean = True);
+Procedure pglContext.SetHasMaximize(Enable: Boolean = True);
   Begin
     Context.wHasMaximize := Enable;
     Self.wStyleChanged := True;
   End;
 
-Procedure TPGLContext.SetHasMinimize(Enable: Boolean = True);
+Procedure pglContext.SetHasMinimize(Enable: Boolean = True);
   Begin
     Context.wHasMinimize := Enable;
     Self.wStyleChanged := True;
   End;
 
-Procedure TPGLContext.SetCanSize(Enable: Boolean = True);
+Procedure pglContext.SetCanSize(Enable: Boolean = True);
   Begin
     Context.wCanSize := Enable;
     Self.wStyleChanged := True;
   End;
 
-Procedure TPGLContext.SetWin7Frame(Enable: Boolean = True);
+Procedure pglContext.SetWin7Frame(Enable: Boolean = True);
 Var
 Flags: GLInt;
   Begin
@@ -1759,7 +1768,7 @@ Flags: GLInt;
   End;
 
 
-Procedure TPGLContext.SetFullScreen(Enable: Boolean = True);
+Procedure pglContext.SetFullScreen(Enable: Boolean = True);
 Var
 ReturnVal: Integer;
 Error: Cardinal;
@@ -1794,74 +1803,74 @@ Error: Cardinal;
     End;
   End;
 
-Procedure TPGLContext.RegisterSizeCallBack(Proc: pglWindowSizeCallBack);
+Procedure pglContext.RegisterSizeCallBack(Proc: pglWindowSizeCallBack);
   Begin
     Self.SizeCallBack := Proc;
   End;
 
-Procedure TPGLContext.RegisterMoveCallBack(Proc: pglWindowMoveCallBack);
+Procedure pglContext.RegisterMoveCallBack(Proc: pglWindowMoveCallBack);
   Begin
     Self.MoveCallBack := Proc;
   End;
 
-Procedure TPGLContext.RegisterMaximizeCallBack(Proc: pglCallBack);
+Procedure pglContext.RegisterMaximizeCallBack(Proc: pglCallBack);
   Begin
     Self.MaximizeCallBack := Proc;
   End;
 
-Procedure TPGLContext.RegisterMinimizeCallBack(Proc: pglCallBack);
+Procedure pglContext.RegisterMinimizeCallBack(Proc: pglCallBack);
   Begin
     Self.MinimizeCallBack := Proc;
   End;
 
-Procedure TPGLContext.RegisterRestoreCallBack(Proc: pglCallBack);
+Procedure pglContext.RegisterRestoreCallBack(Proc: pglCallBack);
   Begin
     Self.RestoreCallBack := Proc;
   End;
 
-Procedure TPGLContext.RegisterGotFocusCallBack(Proc: pglCallBack);
+Procedure pglContext.RegisterGotFocusCallBack(Proc: pglCallBack);
   Begin
     Self.GotFocusCallBack := Proc;
   End;
 
-Procedure TPGLContext.RegisterLostFocusCallBack(Proc: pglCallBack);
+Procedure pglContext.RegisterLostFocusCallBack(Proc: pglCallBack);
   Begin
     Self.LostFocusCallBack := Proc;
   End;
 
-Procedure TPGLContext.RegisterDebugCallBack(Proc: TglDebugProc);
+Procedure pglContext.RegisterDebugCallBack(Proc: TglDebugProc);
   Begin
     If Context.wFeatures.OpenGLDebugContext = False Then Exit;
     glDebugMessageCallBack(Proc,nil);
   End;
 
-Procedure TPGLContext.SetDebugToConsole();
+Procedure pglContext.SetDebugToConsole();
   Begin
     Self.wDebugToConsole := True;
     Self.wDebugToLog := False;
     Self.wDebugToMsgBox := False;
   End;
 
-Procedure TPGLContext.SetDebugToLog();
+Procedure pglContext.SetDebugToLog();
   Begin
     Self.wDebugToConsole := False;
     Self.wDebugToLog := True;
     Self.wDebugToMsgBox := False;
   End;
 
-Procedure TPGLContext.SetDebugToMsgBox();
+Procedure pglContext.SetDebugToMsgBox();
   Begin
     Self.wDebugToConsole := False;
     Self.wDebugToLog := False;
     Self.wDebugToMsgBox := True;
   End;
 
-Procedure TPGLContext.SetBreakOnDebug(Enable: Boolean);
+Procedure pglContext.SetBreakOnDebug(Enable: Boolean);
   Begin
     Self.wBreakOnDebug := Enable;
   End;
 
-Procedure TPGLContext.GetDebugLog(out Buffer: array of string);
+Procedure pglContext.GetDebugLog(out Buffer: array of string);
 Var
 Len: Integer;
 Count: Integer;
@@ -1903,7 +1912,7 @@ CompString: String;
 
   End;
 
-Procedure TPGLContext.CleanUp();
+Procedure pglContext.CleanUp();
 Var
 Success: LongBool;
   Begin
@@ -1917,7 +1926,7 @@ Success: LongBool;
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-Procedure pglStart(Width,Height: GLUint; Format: TPGLWindowFormat; Features: TPGLFeatureSettings; Title: String);
+Procedure pglStart(Width,Height: GLUint; Format: pglWindowformat; Features: pglFeatureSettings; Title: String);
 Var
 DC: HDC;
 
@@ -1925,10 +1934,10 @@ DC: HDC;
 
     EXEPath := ExtractfilePath(ParamStr(0));
 
-    Context := TPGLContext.Create();
-    Context.wController := TPGLController.Create();
-    Context.wMouse := TPGLMouse.Create();
-    Context.wKeyBoard := TPGLKeyboard.Create();
+    Context := pglContext.Create();
+    Context.wController := pglControllerInstance.Create();
+    Context.wMouse := pglMouseInstance.Create();
+    Context.wKeyBoard := pglKeyBoardInstance.Create();
 
     Context.wFormat := Format;
 
@@ -2006,7 +2015,7 @@ Flags: Integer;
     Result := Flags;
   End;
 
-Function ReturnARBPixelFormat(): TPGLAttribs;
+Function ReturnARBPixelFormat(): pglAttribs;
 Var
 MaxSamples: GLUint;
   Begin
@@ -2050,7 +2059,7 @@ MaxSamples: GLUint;
 
 function ConstructContextAttributes(Maj,Min: Integer): HGLRC;
 Var
-A: TPGLAttribs;
+A: pglAttribs;
 
   Begin
 
@@ -2093,8 +2102,8 @@ TempRDC: HGLRC;
 PixelFormat: PIXELFORMATDESCRIPTOR;
 TPF: PIXELFORMATDESCRIPTOR;
 PFID: Integer;
-PixelAttribs: TPGLAttribs;
-ContextAttribs: TPGLAttribs;
+PixelAttribs: pglAttribs;
+ContextAttribs: pglAttribs;
 PixelFormatID: GLInt;
 numFormats: GLUint;
 Status: BOOL;
@@ -2612,7 +2621,7 @@ Procedure GetKeyUp(Var Value: wParam);
 
 
 
-Function pglCreateIcon(SourceIcon: HICON): TPGLIcon;
+Function pglCreateIcon(SourceIcon: HICON): pglIcon;
 Var
 ICINFO: ICONINFOEXW;
 BM: BITMAP;
@@ -2625,7 +2634,7 @@ BM: BITMAP;
     Result.wHotSpot := POINT(ICINFO.xHotspot, ICINFO.yHotSpot);
   End;
 
-Function pglCreateIconFromFile(FileName: String; HotSpotX: GLUint = 0; HotSpotY: GLUint = 0): TPGLIcon;
+Function pglCreateIconFromFile(FileName: String; HotSpotX: GLUint = 0; HotSpotY: GLUint = 0): pglIcon;
 Var
 Image: Pointer;
 Width,Height,Channels,BPP: GLInt;
@@ -2641,7 +2650,7 @@ Width,Height,Channels,BPP: GLInt;
   End;
 
 
-Function pglCreateIconFromPointer(Source: Pointer; Width,Height,BPP: GLUInt; HotSpotX: GLUint = 0; HotSpotY: GLUint = 0): TPGLIcon;
+Function pglCreateIconFromPointer(Source: Pointer; Width,Height,BPP: GLUInt; HotSpotX: GLUint = 0; HotSpotY: GLUint = 0): pglIcon;
 Var
 IconStruct: _ICONINFO;
 BitMap: HBITMAP;

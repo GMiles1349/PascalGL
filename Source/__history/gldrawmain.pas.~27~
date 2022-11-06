@@ -1253,43 +1253,36 @@ uses
     procedure CopyFrom(Sprite: TPGLSprite; X,Y,Width,Height: GLInt); Overload; register;
   end;
 
-
   type
     TPGLImageHelper = class Helper for TPGLImage
     constructor CreateFromTexture(Var Source: TPGLTexture); register;
     procedure CopyFromTexture(Var Source: TPGLTexture); register;
   end;
 
-
   type TPGLColorIHelper = record Helper for TPGLColorI
     function IsColor(CompareColor: TPGLColorF; Tolerance: Double = 0): Boolean; OverLoad; register;
     function IsColor(CompareColor: TPGLColorI; Tolerance: Double = 0): Boolean; OverLoad; register;
   end;
-
 
   type TPGLColorFHelper = record Helper for TPGLColorF
     function IsColor(CompareColor: TPGLColorI; Tolerance: Double = 0): Boolean; OverLoad; register;
     function IsColor(CompareColor: TPGLColorF; Tolerance: Double = 0): Boolean; OverLoad; register;
   end;
 
+  TPGLRectFHelper = record helper for TPGLRectF
+      function toRectI(): TPGLRectI;
+      function toPoints(): TPGLVectorQuad;
+      function CheckInside(Pos: TPGLVector2): Boolean; register;
+    end;
 
-  Type TPGLRectFHelper = record helper for TPGLRectF
-    function toRectI(): TPGLRectI;
-    function toPoints(): TPGLVectorQuad;
-    function CheckInside(Pos: TPGLVector2): Boolean; register;
-  end;
-
-  Type TPGLRectIHelper = record helper for TPGLRectI
-    function toRectF(): TPGLRectF;
-    function toPoints(): TPGLVectorQuad;
-    function CheckInside(Pos: TPGLVector2): Boolean; register;
-  end;
+    TPGLRectIHelper = record helper for TPGLRectI
+      function toRectF(): TPGLRectF;
+      function toPoints(): TPGLVectorQuad;
+      function CheckInside(Pos: TPGLVector2): Boolean; register;
+    end;
 
 
-  //////////////////////////////////////////////////////////////////////////////
-  //////////////////// Global Procedures and Functions /////////////////////////
-  //////////////////////////////////////////////////////////////////////////////
-
+	// Init, config and callback
   procedure pglInit(Var AWindow: TPGLWindow; AWidth,AHeight: GLInt; ATitle: String; AWindowAttributes: TPGLWindowFlags); register;
   procedure pglSetColorFormats(AWindowAttributes: TPGLWindowFlags); register;
   procedure pglGetWindowColorFormat(); register;
@@ -1364,7 +1357,8 @@ uses
   procedure pglSetEllipseInterval(Interval: GLInt = 10); register;
 
   function ImageDesc(Source: Pointer; Width,Height: GLUInt): TPGLImageDescriptor; register;
-  function pglPixelFromMemory(Source: Pointer; X,Y,Width,Height: GLInt): TPGLColorI; register;
+  function PGLPixelFromMemory(Source: Pointer; X,Y,Width,Height: GLInt): TPGLColorI; register;
+
 
   function FindTextLineBreak(Var Text:String): Integer; register;
   function FindTextTags(Var Text:String): TPGLTextTagArray; register;
@@ -1393,9 +1387,11 @@ uses
   procedure TransformToBuffer(Out Points: TPGLVectorQuad; BuffWidth,BuffHeight: GLFloat); register;
   procedure TransformToTexture(Out Points: TPGLVectorQuad; TexWidth,TexHeight: GLFloat); register;
 
+
+
   // Shader functions
-  function pglGetUniform(Uniform: String): GLInt; register;
-  procedure pglUseProgram(ShaderProgramName: String); register;
+  function PGLGetUniform(Uniform: String): GLInt; register;
+  procedure PGLUseProgram(ShaderProgramName: String); register;
 
 Var
 

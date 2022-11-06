@@ -17,7 +17,7 @@ uses
   Const ALSOURCE = (1);
   Const ALLISTERN = (2);
 
-  Type TPGLSoundBuffer = Record
+  Type pglSoundBuffer = Record
 
     Private
       pIsValid: Boolean;
@@ -34,17 +34,17 @@ uses
       Procedure LoadDataFromFile(FileName: String; NameBuffer: String); Register; Inline;
   End;
 
-  Type PPGLSoundBuffer = ^TPGLSoundBuffer;
+  Type PpglSoundBuffer = ^pglSoundBuffer;
 
 
-  Type TPGLSoundSource = Record
+  Type pglSoundSource = Record
 
     Private
       Source: TALUInt;
       State: TALUInt;
 
       pHasBuffer: Boolean; // is the buffer assigned?
-      pBuffer: TPGLSoundBuffer;
+      pBuffer: pglSoundBuffer;
 
       pisDynamic: Boolean;
       pGain: Double;
@@ -69,11 +69,11 @@ uses
     Public
       Name: String;
 
-      Class Operator Initialize(Out Dest: TPGLSoundSource); Register;
+      Class Operator Initialize(Out Dest: pglSoundSource); Register;
 
       // Properties
       Property HasBuffer: Boolean Read pHasBuffer;
-      Property Buffer: TPGLSoundBuffer read pBuffer;
+      Property Buffer: pglSoundBuffer read pBuffer;
       Property isDynamic: Boolean Read pisDynamic;
       Property Gain: Double Read pGain;
       Property PosX: Double Read pPosX;
@@ -86,7 +86,7 @@ uses
       Property ConeOuterGain: Single Read pConeOuterGain;
 
       // Setters
-      Procedure AssignBuffer(Var Buffer: TPGLSoundBuffer); Register; Inline;
+      Procedure AssignBuffer(Var Buffer: pglSoundBuffer); Register; Inline;
       Procedure SetGain(Value: Double); Register; Inline;
       Procedure SetPosition(X,Y: Double); Register; Inline;
       Procedure SetXPosition(X: Double); Register; Inline;
@@ -114,16 +114,16 @@ uses
   End;
 
 
-  Type TPGLSoundSlot = Record
+  Type pglSoundSlot = Record
 
     Private
-      SoundSource: ^TPGLSoundSource;
+      SoundSource: ^pglSoundSource;
       Source: TALUint;
 
   End;
 
 
-  Type TSoundTemp = Class
+  Type SoundTemp = Class
 
     Public
 
@@ -135,9 +135,9 @@ uses
 
     Constructor Create();
 
-  end; // TSoundTemp
+  end; // SoundTemp
 
-  Type TPGLListener = Class
+  Type pglListener = Class
 
     Private
       pDirection: Single;
@@ -162,7 +162,7 @@ uses
 
   end; // Listener Template
 
-  Type TSourceTemp = Class
+  Type SourceTemp = Class
 
     Public
 
@@ -182,7 +182,7 @@ uses
 
 
 
-  Type TQueryEntry = Record
+  Type QueueEntry = Record
 
     Used: Boolean;
     StartTime,EndTime: Double;
@@ -191,44 +191,45 @@ uses
   End;
 
 
-  Type TPGLSoundInstance = Class
+  Type pglSoundInstance = Class
 
     Private
       pGlobalVolume: Double;
-      pListener: TPGLListener;
+      pListener: pglListener;
       pDynamicSound: Boolean;
 
       BufferCount: Integer;
-      Buffers: Array of TPGLSoundBuffer;
+      Buffers: Array of pglSoundBuffer;
 
       SourceCount: Integer;
-      Sources: Array of ^TPGLSoundSource;
+      Sources: Array of ^pglSoundSource;
 
-      Sounds: Array [0..100] of TPGLSoundSlot;
+      Sounds: Array [0..100] of pglSoundSlot;
       CurrentSound: TALUint;
 
-      TempSource: TPGLSoundSource;
+      TempSource: pglSoundSource;
 
     Public
 
       // Properties
       Property GlobalVolume: Double Read pGlobalVolume;
-      Property Listener: TPGLListener Read pListener;
+      Property Listener: pglListener Read pListener;
       Property DyanmicSound: Boolean Read pDynamicSound;
 
       // Setters
       Constructor Create(); Register;
       Procedure SetGlobalVolume(Value: Double); Register; Inline;
       Procedure SetDynamicSound(Enable: Boolean = True); Register; Inline;
-      Procedure PlayFromBuffer(Var Buffer: TPGLSoundBuffer); Overload; Register;
-      Procedure PlayFromBuffer(Var Buffer: TPGLSoundBuffer; X,Y,Radius,Direction,Gain,Pitch,ConeAngle,ConeOuterGain: Single); Overload; Register;
+      Procedure PlayFromBuffer(Var Buffer: pglSoundBuffer); Overload; Register;
+      Procedure PlayFromBuffer(Var Buffer: pglSoundBuffer; X,Y,Radius,Direction,Gain,Pitch,ConeAngle,ConeOuterGain: Single); Overload; Register;
 
     Private
-      Procedure PlaySound(Var From: TPGLSoundSource); Register; Inline;
-      Procedure StopSound(Var From: TPGLSoundSource); Register; Inline;
+      Procedure PlaySound(Var From: pglSoundSource); Register; Inline;
+      Procedure StopSound(Var From: pglSoundSource); Register; Inline;
 
   End;
 
+  Procedure StartOpenAL(); Register;
   Procedure AssignSound(InName, Path: String; InType: String = 'FX'); Register; InLine;
   Procedure UnloadSounds(); Register;
   Procedure AssignMusic(InName, Path: String); Register;
@@ -285,29 +286,29 @@ TotalSounds: NativeInt;
 TotalMusic: NativeInt;
 
 SoundCount: NativeInt;
-Sound: Array [0..100] of TSoundTemp; // Stored Sounds
-CurrentSound: Array [0..100] of TSourceTemp; // Actually playing sounds
-UtilitySource: TSourceTemp;
+Sound: Array [0..100] of SoundTemp; // Stored Sounds
+CurrentSound: Array [0..100] of SourceTemp; // Actually playing sounds
+UtilitySource: SourceTemp;
 
 
-SoundLoop: Array [0..20] of TSourceTemp; // LoopingSounds
+SoundLoop: Array [0..20] of SourceTemp; // LoopingSounds
 
-Music: Array [0..20] of TSoundTemp;
-CurrentMusic: TSourceTemp;
+Music: Array [0..20] of SoundTemp;
+CurrentMusic: SourceTemp;
 
 PauseArray: Array [0..200] Of NativeInt;
 LoopPauseArray: Array [0..20] Of NativeInt;
 NoteArray: Array [1..12] of String;
 
-pglSound: TPGLSoundInstance;
+pglSound: pglSoundInstance;
 
-MusicQueueList: Array [0..20] of TQueryEntry;
+MusicQueueList: Array [0..20] of QueueEntry;
 
 
 implementation
 
 
-Constructor TSoundTemp.Create();
+Constructor SoundTemp.Create();
 
 
   Begin
@@ -317,7 +318,7 @@ Constructor TSoundTemp.Create();
   end; // Sound Create
 
 
-Constructor TPGLListener.Create();
+Constructor pglListener.Create();
 
 Var
 I: NativeInt;
@@ -335,7 +336,7 @@ I: NativeInt;
     self.pVolume := 0;
   end;
 
-Constructor TSourceTemp.Create();
+Constructor SourceTemp.Create();
 Var
 I: NativeInt;
 
@@ -693,7 +694,7 @@ State: Integer;
   end;
 
 
-Constructor TPGLSoundInstance.Create();
+Constructor pglSoundInstance.Create();
 Var
 I: Long;
 
@@ -712,20 +713,20 @@ I: Long;
 
     alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED);
 
-    Self.pListener := TPGLListener.Create();
+    Self.pListener := pglListener.Create();
 
     For I := 0 to High(Music) Do Begin
-      Music[i] := TSoundTemp.Create();
+      Music[i] := SoundTemp.Create();
     end;
 
     For I := 0 to high(SoundLoop) Do Begin
-      SoundLoop[i] := TSourceTemp.Create();
+      SoundLoop[i] := SourceTemp.Create();
     End;
 
-    CurrentMusic := TSourceTemp.Create();
+    CurrentMusic := SourceTemp.Create();
     AlSourcei(CurrentMusic.Source, AL_LOOPING, 1);
 
-    UtilitySource := TSourceTemp.Create();
+    UtilitySource := SourceTemp.Create();
 
     For I := 0 to 100 Do Begin
       AlGenSources(1, @Self.Sounds[i].Source);
@@ -738,7 +739,7 @@ I: Long;
   End;
 
 
-Procedure TPGLSoundInstance.SetGlobalVolume(Value: Double);
+Procedure pglSoundInstance.SetGlobalVolume(Value: Double);
   Begin
 
     If Value > 1 Then Begin
@@ -751,7 +752,7 @@ Procedure TPGLSoundInstance.SetGlobalVolume(Value: Double);
   End;
 
 
-Procedure TPGLSoundInstance.SetDynamicSound(Enable: Boolean = True);
+Procedure pglSoundInstance.SetDynamicSound(Enable: Boolean = True);
   Begin
     Self.pDynamicSound := Enable;
     If Enable = True Then Begin
@@ -762,7 +763,7 @@ Procedure TPGLSoundInstance.SetDynamicSound(Enable: Boolean = True);
   End;
 
 
-Procedure TPGLSoundInstance.PlayFromBuffer(Var Buffer: TPGLSoundBuffer);
+Procedure pglSoundInstance.PlayFromBuffer(Var Buffer: pglSoundBuffer);
   Begin
     Self.TempSource.AssignBuffer(Buffer);
     Self.TempSource.SetGain(1);
@@ -776,7 +777,7 @@ Procedure TPGLSoundInstance.PlayFromBuffer(Var Buffer: TPGLSoundBuffer);
   End;
 
 
-Procedure TPGLSoundInstance.PlayFromBuffer(Var Buffer: TPGLSoundBuffer; X,Y,Radius,Direction,Gain,Pitch,ConeAngle,ConeOuterGain: Single);
+Procedure pglSoundInstance.PlayFromBuffer(Var Buffer: pglSoundBuffer; X,Y,Radius,Direction,Gain,Pitch,ConeAngle,ConeOuterGain: Single);
   Begin
     Self.TempSource.AssignBuffer(Buffer);
     Self.TempSource.SetGain(Gain);
@@ -789,9 +790,9 @@ Procedure TPGLSoundInstance.PlayFromBuffer(Var Buffer: TPGLSoundBuffer; X,Y,Radi
     Self.Playsound(Self.TempSource);
   End;
 
-Procedure TPGLSoundInstance.PlaySound(Var From: TPGLSoundSource);
+Procedure pglSoundInstance.PlaySound(Var From: pglSoundSource);
 Var
-CurSound: ^TPGLSoundSlot;
+CurSound: ^pglSoundSlot;
 Dist: Single;
 Angle: Single;
 GainChange: Single;
@@ -858,10 +859,10 @@ DX,DY: Single;
   End;
 
 
-Procedure TPGLSoundInstance.StopSound(var From: TPGLSoundSource);
+Procedure pglSoundInstance.StopSound(var From: pglSoundSource);
 
 Var
-CurSound: ^TPGLSoundSlot;
+CurSound: ^pglSoundSlot;
 I: Long;
 ReturnVal: TALint;
 
@@ -881,6 +882,21 @@ ReturnVal: TALint;
     End;
 
   End;
+
+
+Procedure StartOpenAL();
+
+Var
+I: NativeInt;
+
+
+  Begin
+
+    If OpenALRunning = True Then Exit;
+
+
+  End; // OpenAL Init
+
 
 
 Procedure UnloadSounds();
@@ -987,7 +1003,7 @@ Intime: Int64;
   End;
 
 
-Procedure TPGLListener.SetPosition(X,Y: single);
+Procedure pglListener.SetPosition(X,Y: single);
 Var
 Orr: Array [0..5] of Single;
   Begin
@@ -1010,7 +1026,7 @@ Orr: Array [0..5] of Single;
     AlSource3f(CurrentMusic.Source, AL_POSITION, X,Y,0);
   End;
 
-Procedure TPGLListener.SetDirection(Angle: Single);
+Procedure pglListener.SetDirection(Angle: Single);
 Var
 X,Y: Single;
   Begin
@@ -1020,7 +1036,7 @@ X,Y: Single;
     Self.listenerdir[1] := Y;
   End;
 
-Procedure TPGLListener.SetVolume(Value: Single);
+Procedure pglListener.SetVolume(Value: Single);
   Begin
     Self.pVolume := Value;
     If Self.Volume < 0 Then Self.pVolume := 0;
@@ -1029,7 +1045,7 @@ Procedure TPGLListener.SetVolume(Value: Single);
   End;
 
 
-Procedure TPGLSoundBuffer.LoadDataFromFile(FileName: string; NameBuffer: String);
+Procedure pglSoundBuffer.LoadDataFromFile(FileName: string; NameBuffer: String);
   Begin
 
     If FileExists(FileName) = False Then Exit;
@@ -1053,7 +1069,7 @@ Procedure TPGLSoundBuffer.LoadDataFromFile(FileName: string; NameBuffer: String)
   End;
 
 
-Class Operator TPGLSoundSource.Initialize(Out Dest: TPGLSoundSource);
+Class Operator pglSoundSource.Initialize(Out Dest: pglSoundSource);
   Begin
     Dest.pRadius := 100;
     Dest.pHasBuffer := False;
@@ -1075,7 +1091,7 @@ Class Operator TPGLSoundSource.Initialize(Out Dest: TPGLSoundSource);
   End;
 
 
-Procedure TPGLSoundSource.CheckHasBuffer();
+Procedure pglSoundSource.CheckHasBuffer();
   Begin
 
     // if doesn't have buffer, then create source, add to pglSound source array
@@ -1088,7 +1104,7 @@ Procedure TPGLSoundSource.CheckHasBuffer();
 
   End;
 
-Procedure TPGLSoundSource.AssignBuffer(Var Buffer: TPGLSoundBuffer);
+Procedure pglSoundSource.AssignBuffer(Var Buffer: pglSoundBuffer);
   Begin
 
     // Gen source if has none
@@ -1104,7 +1120,7 @@ Procedure TPGLSoundSource.AssignBuffer(Var Buffer: TPGLSoundBuffer);
   End;
 
 
-Procedure TPGLSoundSource.SetGain(Value: Double);
+Procedure pglSoundSource.SetGain(Value: Double);
   Begin
     If Value < 0 Then Value := 0;
     If Value > 1 Then Value := 1;
@@ -1113,13 +1129,13 @@ Procedure TPGLSoundSource.SetGain(Value: Double);
   End;
 
 
-Procedure TPGLSoundSource.UpdateBufferPosition();
+Procedure pglSoundSource.UpdateBufferPosition();
   Begin
     alSource3F(Self.Source, AL_POSITION, Self.PosX, Self.PosY, 0);
   End;
 
 
-Procedure TPGLSoundSource.SetPosition(X: Double; Y: Double);
+Procedure pglSoundSource.SetPosition(X: Double; Y: Double);
   Begin
     Self.pPosX := X;
     Self.pPosY := Y;
@@ -1127,21 +1143,21 @@ Procedure TPGLSoundSource.SetPosition(X: Double; Y: Double);
   End;
 
 
-Procedure TPGLSoundSource.SetXPosition(X: Double);
+Procedure pglSoundSource.SetXPosition(X: Double);
   Begin
     Self.pPosX := X;
     Self.UpdateBufferPosition();
   End;
 
 
-Procedure TPGLSoundSource.SetYPosition(Y: Double);
+Procedure pglSoundSource.SetYPosition(Y: Double);
   Begin
     Self.pPosY := Y;
     Self.UpdateBufferPosition();
   End;
 
 
-Procedure TPGLSoundSource.SetPositionPointers(pX: Pointer; pY: Pointer);
+Procedure pglSoundSource.SetPositionPointers(pX: Pointer; pY: Pointer);
   Begin
     Self.pHasPosPointers := True;
     Self.pXPointer := pX;
@@ -1149,7 +1165,7 @@ Procedure TPGLSoundSource.SetPositionPointers(pX: Pointer; pY: Pointer);
   End;
 
 
-Procedure TPGLSoundSource.SetVariablePitch(LowRange: Double; HighRange: Double);
+Procedure pglSoundSource.SetVariablePitch(LowRange: Double; HighRange: Double);
   Begin
     Self.pHasVariablePitch := True;
     Self.pPitchRange[0] := LowRange;
@@ -1157,7 +1173,7 @@ Procedure TPGLSoundSource.SetVariablePitch(LowRange: Double; HighRange: Double);
   End;
 
 
-Procedure TPGLSoundSource.SetFixedPitch(Value: Double);
+Procedure pglSoundSource.SetFixedPitch(Value: Double);
   Begin
     Self.pHasVariablePitch := False;
     Self.pPitchRange[0] := Value;
@@ -1165,13 +1181,13 @@ Procedure TPGLSoundSource.SetFixedPitch(Value: Double);
     alSourceF(Self.Source, AL_PITCH, Value);
   End;
 
-Procedure TPGLSoundSource.SetLooping(Value: Boolean = True);
+Procedure pglSoundSource.SetLooping(Value: Boolean = True);
   Begin
     Self.pLooping := Value;
     alSourceI(Self.Source, AL_LOOPING, Value.ToInteger);
   End;
 
-Procedure TPGLSoundSource.SetDirection(Angle: Single);
+Procedure pglSoundSource.SetDirection(Angle: Single);
 Var
 I,R: Long;
 DX,DY: Single;
@@ -1196,40 +1212,40 @@ DX,DY: Single;
 
   End;
 
-Procedure TPGLSoundSource.SetRadius(Distance: Single);
+Procedure pglSoundSource.SetRadius(Distance: Single);
   Begin
     Self.pRadius := Distance;
   End;
 
-Procedure TPGLSoundSource.SetCone(Angle: Single; ConeOuterGain: Single);
+Procedure pglSoundSource.SetCone(Angle: Single; ConeOuterGain: Single);
   Begin
     Self.pConeAngle := Angle * (180 / Pi);
     Self.pConeOuterGain := ConeOuterGain;
   End;
 
-Procedure TPGLSoundSource.SetConeAngle(Angle: Single);
+Procedure pglSoundSource.SetConeAngle(Angle: Single);
   Begin
     Self.pConeAngle := Angle * (180 / Pi);
   End;
 
-Procedure TPGLSoundSource.SetConeOuterGain(Gain: Single);
+Procedure pglSoundSource.SetConeOuterGain(Gain: Single);
   Begin
     Self.pConeOuterGain := Gain;
   End;
 
-Procedure TPGLSoundSource.ReleasePositionPointers();
+Procedure pglSoundSource.ReleasePositionPointers();
   Begin
     Self.pHasPosPointers := False;
     Self.pXPointer := nil;
     Self.pYPointer := nil;
   End;
 
-Procedure TPGLSoundSource.SetDynamic(Enable: Boolean = True);
+Procedure pglSoundSource.SetDynamic(Enable: Boolean = True);
   Begin
     Self.pisDynamic := Enable;
   End;
 
-Procedure TPGLSoundSource.UpdatePosition();
+Procedure pglSoundSource.UpdatePosition();
   Begin
     If Self.pHasPosPointers = False Then Exit;
 
@@ -1238,7 +1254,7 @@ Procedure TPGLSoundSource.UpdatePosition();
   End;
 
 
-Procedure TPGLSoundSource.Play();
+Procedure pglSoundSource.Play();
   Begin
 
     If Self.pHasPosPointers Then Begin
@@ -1259,7 +1275,7 @@ Procedure TPGLSoundSource.Play();
   End;
 
 
-Procedure TPGLSoundSource.Stop();
+Procedure pglSoundSource.Stop();
 
   Begin
 

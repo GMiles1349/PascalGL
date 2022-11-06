@@ -77,34 +77,37 @@ uses
     Count,InstanceCount,First,BaseInstance: GLUInt;
   end;
 
-
   type TPGLElementsIndirectBuffer = record
     Count,InstanceCount,FirstIndex,BaseVertex,BaseInstance: GLUInt;
   end;
 
-
   type TPGLVBO = record
+
     Private
       InUse: Boolean;
       Buffer: GLUInt;
       SubDataOffSet: GLInt;
       SubDataSize: GLInt;
+
       procedure SubData(Binding: glEnum; Offset: GLInt; Size: GLInt; Source: Pointer);
   end;
 
 
   type TPGLSSBO = record
+
     Private
       InUse: Boolean;
       Buffer: GLUInt;
       SubDataOffSet: GLInt;
       SubDataSize: GLInt;
+
       procedure SubData(Binding: glEnum; Offset: GLInt; Size: GLInt; Source: Pointer);
   end;
 
-
   type TPGLBufferCollection = record
+
     Public
+
       VAO: GLUInt;
       EBO: GLUInt;
       VBO: Array [0..39] of TPGLVBO;
@@ -134,13 +137,11 @@ uses
     M: Array [0..15] of GLFloat;
   end;
 
-
   type TPGLMatrix3 = record
     M: Array [0..8] of GLFloat;
     procedure Fill(Values: Array of GLFloat); register;
     function Val(X,Y: GLUint): GLFloat; register;
   end;
-
 
   type TPGLMatrix2 = record
     M: Array [0..1] of Array [0..1] of GLFloat;
@@ -151,13 +152,14 @@ uses
     procedure Rotate(Angle: GLFloat); register;
     procedure Translate(X,Y: GLFloat); register;
     procedure Scale(sX,sY: GLFloat); register;
+
   end;
 
 
   type TPGLIndices = record
+
     Index: Array [0..5] of GLUInt;
   end;
-
 
 	type TPGLRectI = record
     Left,Right,Top,Bottom,X,Y,Width,Height: GLInt;
@@ -206,7 +208,6 @@ uses
     procedure Normalize(Origin: TPGLVector2); register;
   end;
 
-
   type TPGLVector3 = record
     X,Y,Z: GLFloat;
     class operator Subtract(A: TPGLVector3; B: TPGLVector3): TPGLVector3;
@@ -216,15 +217,12 @@ uses
     procedure Translate(X: Single = 0; Y: Single = 0; Z: Single = 0); register;
   end;
 
-
   type TPGLVector4 = record
     X,Y,Z,W: GLFloat;
   end;
 
-
   type TPGLVectorQuad = Array [0..3] of TPGLVector2;
   type TPGLVectorTriangle = Array [0..5] of TPGLVector2;
-
 
   type TPGLColorI = record
     Red,Green,Blue,Alpha: glUByte;
@@ -233,19 +231,18 @@ uses
     procedure Adjust(Percent: Integer; AdjustAlpha: Boolean = False); register;
   end;
 
-
   type TPGLColorF = record
     Red,Green,Blue,Alpha: glClampF;
     function Value(): Double;
     function ToMultiply(Ratio: Single): TPGLColorF; register;
   end;
 
-
   type TColorFArray = Array of TPGLColorF;
   type TColorArray = Array of TPGLColorI;
 
 
   type TPGLRenderParams = record
+
     ColorValues: TPGLColorI;
     ColorOverlay: TPGLColorI;
     MaskColor: TPGLColorI;
@@ -255,12 +252,12 @@ uses
     PixelSize: GLInt;
   end;
 
-
   type TPGLCharArray = Array of AnsiChar;
 
 
   {///////////// Shapes ///////////////////}
   type TPGLShape = class(TPersistent)
+
     Private
       Count: GLInt;
       Points: Array of TPGLVector2;
@@ -268,16 +265,21 @@ uses
       Center: TPGLVector2;
 
     Public
+
+
       Property Position: TPGLVector2 read Center;
       Property PointColor: TColorFArray read Color;
+
   end;
 
 
   type TPGLPoint = class(TPersistent)
+
     Private
       pPos: TPGLVector2;
       pColor: TPGLColorF;
       pSize: GLFloat;
+
 
     Public
       constructor Create(P: TPGLVector2; size: GLFloat; color: TPGLColorF);
@@ -289,6 +291,7 @@ uses
       Property Position: TPGLVector2 read pPos write SetPosition;
       Property Color: TPGLColorF read pColor write SetColor;
       Property Size: GLFloat read pSize write SetSize;
+
   end;
 
 
@@ -301,17 +304,18 @@ uses
     Fade: TPGLVector4;
   end;
 
-
   type TPGLCircleBatch = record
+
     Count: GLInt;
     Data: PByte;
     Vector: Array [0..4000] of TPGLVectorQuad;
     class operator Initialize(Out Dest: TPGLCircleBatch);
   end;
 
-
   type TPGLRectangleBatch = record
+
     Count: GLInt;
+
     Vector: Array [0..40000] of TPGLVectorQuad;
     Center: Array [0..10000] of TPGLVector2;
     Dims: Array [0..10000] of TPGLVector2;
@@ -321,15 +325,14 @@ uses
     Curve: Array [0..10000] of GLFloat;
   end;
 
-
   type TPGLPointBatch = record
     Count: GLInt;
     Data: PByte;
     class operator Initialize(Out Dest: TPGLPointBatch);
   end;
 
-
   type TPGLPolygonBatch = record
+
     Count: GLInt;
     ShapeCount: GLInt;
     ElementCount: GLInt;
@@ -338,8 +341,8 @@ uses
     Size: Array [0..10000] of GLFloat;
   end;
 
-
   type TPGLLightBatch = record
+
     Count: GLInt;
     Vertices: Array [0..1000] of TPGLVectorQuad;
     TexCoords: Array [0..1000] of TPGLVectorQuad;
@@ -357,7 +360,6 @@ uses
     Radiance: GLFloat;
   end;
 
-
   type TPGLLightPolygonBatch = record
     Count: GLInt;
     Points: Array [0..1000] of TPGLVector2;
@@ -368,13 +370,11 @@ uses
     Radiance: Array [0..50] of  GLFloat;
   end;
 
-
   type TPGLLineBatch = record
     Count: GLInt;
     Points: Array [0..1000] of TPGLVector2;
     Color: Array [0..1000] of TPGLColorF;
   end;
-
 
   type TPGLShapeDesc = record
     FillColor: TPGLColorF;
@@ -382,7 +382,6 @@ uses
     Width,Height,BorderWidth,ShapeType: GLFloat;
     Pos: TPGLVector4; // X,Y = center, Z = Angle
   end;
-
 
   type TPGLShapeBatch = record
     Count: GLUInt;
@@ -393,7 +392,6 @@ uses
     ShapeBuffer: Array [0..1000] of TPGLArrayIndirectBuffer;
     Shape: Array [0..1000] of TPGLShapeDesc;
   end;
-
 
   type TPGLGeometryBatch = record
     Count: GLUint;
@@ -408,8 +406,8 @@ uses
     class operator Initialize(Out Dest: TPGLGeometryBatch);
   end;
 
-
   type TPGLTextureBatch = record
+
     Count: GLInt;
     TextureSlot: Array [0..31] of GLInt;
     SlotsUsed: GLInt;
@@ -424,39 +422,45 @@ uses
     GreyScale: Array [0..1000] of GLUint;
 
     procedure Clear(); register;
+
   end;
 
   type TPGLLightSource = class
+
     Public
 
-      Active: Boolean;
-      Position: TPGLVector2;
-      Bounds: TPGLRectF;
-      Width: GLFloat;
-      Color: TPGLColorF;
-      Radiance: GLFloat;
-      Ver: TPGLVectorQuad;
-      Cor: TPGLVectorQuad;
+    Active: Boolean;
 
-      constructor Create(); register;
-      procedure SetActive(isActive: Boolean = True); register;
-      procedure SetPosition(Pos: TPGLVector2); register;
-      procedure SetColor(Color: TPGLColorF); Overload; register;
-      procedure SetColor(Color: TPGLColorI); Overload; register;
-      procedure SetRadiance(RadianceVal: GLFloat); register;
-      procedure SetWidth(Val: GLFloat); register;
-      procedure Place(Pos: TPGLVector2; WidthVal: GLFloat); register;
+    Position: TPGLVector2;
+    Bounds: TPGLRectF;
+    Width: GLFloat;
+    Color: TPGLColorF;
+    Radiance: GLFloat;
+
+    Ver: TPGLVectorQuad;
+    Cor: TPGLVectorQuad;
+
+    constructor Create(); register;
+    procedure SetActive(isActive: Boolean = True); register;
+    procedure SetPosition(Pos: TPGLVector2); register;
+    procedure SetColor(Color: TPGLColorF); Overload; register;
+    procedure SetColor(Color: TPGLColorI); Overload; register;
+    procedure SetRadiance(RadianceVal: GLFloat); register;
+    procedure SetWidth(Val: GLFloat); register;
+    procedure Place(Pos: TPGLVector2; WidthVal: GLFloat); register;
+
   end;
 
-
   type TPGLImageDescriptor = record
+
     Public
       Handle: Pointer;
       Width,Height: GLUInt;
+
   end;
 
-
   type TPGLImage = class(TPersistent)
+
     Private
       isValid: Boolean;
       pHandle: PByte;
@@ -471,6 +475,8 @@ uses
       procedure Delete(); register;
 
     Public
+
+
       constructor Create(Width: GLUint = 1; Height: GLUint = 1); register;
       constructor CreateFromFile(FileName: String); register;
       constructor CreateFromMemory(Source: Pointer; Width,Height: NativeUInt; Size: NativeUInt); register;
@@ -499,40 +505,46 @@ uses
       Property Handle: PByte read pHandle;
       Property Channels: GLInt read pChannels;
       Property DataSize: GLInt read pDataSize;
+
   end;
 
 
   type TPGLTexture = class
-    Public
-      Handle: GLUInt;
-      Width,Height: GLUInt;
-      BitDepth: GLInt;
 
-      constructor Create(Width: GLUint = 0; Height: GLUint = 0); register;
-      constructor CreateFromImage(Image: TPGLImage);
-      constructor CreateFromFile(FileName: string);
-      constructor CreateFromTexture(Texture: TPGLTexture);
-      procedure Delete(); register;
-      procedure SaveToFile(FileName: String);
-      procedure Smooth(Area: TPGLRectF; IgnoreColor: TPGLColorI); register;
-      procedure ReplaceColors(TargetColors: Array of TPGLColorI; NewColor: TPGLColorI; Tolerance: Double = 0); register;
-      procedure CopyFromData(Data: Pointer; Width,Height: GLInt); register;
-      procedure CopyFromTexture(Source: TPGLTexture; X,Y,Width,Height: GLUInt); register;
-      procedure SetSize(Width,Height: GLUint; KeepImage: Boolean = False); register;
-      function Pixel(X,Y: Integer): TPGLColorI; register;
-      function SetPixel(Color: TPGLColorI; X,Y: Integer): TPGLColorI; register;
-      procedure Pixelate(PixelWidth: GLUint = 2); register;
-      procedure CopyToImage(Dest: TPGLImage; SourceRect, DestRect: TPGLRectI);
-      procedure CopyToAddress(Dest: Pointer); register;
-      procedure SetNearestFilter(); register;
-      procedure SetLinearFilter(); register;
+    Public
+    Handle: GLUInt;
+    Width,Height: GLUInt;
+    BitDepth: GLInt;
+
+    constructor Create(Width: GLUint = 0; Height: GLUint = 0); register;
+    constructor CreateFromImage(Image: TPGLImage);
+    constructor CreateFromFile(FileName: string);
+    constructor CreateFromTexture(Texture: TPGLTexture);
+    procedure Delete(); register;
+    procedure SaveToFile(FileName: String);
+    procedure Smooth(Area: TPGLRectF; IgnoreColor: TPGLColorI); register;
+    procedure ReplaceColors(TargetColors: Array of TPGLColorI; NewColor: TPGLColorI; Tolerance: Double = 0); register;
+    procedure CopyFromData(Data: Pointer; Width,Height: GLInt); register;
+    procedure CopyFromTexture(Source: TPGLTexture; X,Y,Width,Height: GLUInt); register;
+    procedure SetSize(Width,Height: GLUint; KeepImage: Boolean = False); register;
+    function Pixel(X,Y: Integer): TPGLColorI; register;
+    function SetPixel(Color: TPGLColorI; X,Y: Integer): TPGLColorI; register;
+    procedure Pixelate(PixelWidth: GLUint = 2); register;
+    procedure CopyToImage(Dest: TPGLImage; SourceRect, DestRect: TPGLRectI);
+    procedure CopyToAddress(Dest: Pointer); register;
+    procedure SetNearestFilter(); register;
+    procedure SetLinearFilter(); register;
 
     Private
-      procedure CheckDefaultReplace(); register;
+
+    procedure CheckDefaultReplace(); register;
+
   end;
 
 
+
   type TPGLSprite = class
+
     Private
       pTexture: TPGLTexture;
       pBounds: TPGLRectF;
@@ -558,8 +570,8 @@ uses
       pColorValues: TPGLColorF;
       pColorOverlay: TPGLColorF;
       // Pointers
-      PColorValuesPointer: ^TPGLColorF;
-      PColorOverlayPointer: ^TPGLColorF;
+        pColorValuesPointer: ^TPGLColorF;
+        pColorOverlayPointer: ^TPGLColorF;
 
       Ver: TPGLVectorQuad;
       Cor: TPGLVectorQuad;
@@ -567,7 +579,9 @@ uses
 
       pRectSet: Array [1..100] of TPGLRectI;
 
+
     Private
+
       procedure Initialize(); register;
       procedure UpdateVertices(); register;
       function GetColorValues(): TPGLColorF; register;
@@ -576,6 +590,7 @@ uses
       function GetTopLeft(): TPGLVector2; register;
 
     Public
+
       constructor Create(); Overload; register;
       constructor CreateFromTexture(Var Texture: TPGLTexture); Overload; register;
       procedure Delete(); register;
@@ -607,6 +622,7 @@ uses
       procedure SetTextureRect(TexRect: TPGLRectI); register;
       procedure SetRectSlot(Slot: GLInt; Rect: TPGLRectI); register;
       procedure UseRectSlot(Slot: GLInt); register;
+
       procedure SaveToFile(FileName: String); register;
 
       Property Texture: TPGLTexture read pTexture;
@@ -636,10 +652,12 @@ uses
       Property RectSet[Index: Integer]: TPGLRectI read GetRectSet;
 
       function Pixel(X,Y: Integer): TPGLColorI; register;
+
   end;
 
 
   type TPGLPointCollection = record
+
     Private
       pCount: GLUInt;
       pWidth: GLUInt;
@@ -656,13 +674,16 @@ uses
       function Point(X,Y: GLUInt): TPGLColorI; Overload; register;
       function Point(N: GLUInt): TPGLColorI; Overload; register;
 
+
       Property Width: GLUInt read pWidth;
       Property Height: GLUInt Read pHeight;
       Property Count: GLUInt Read pCount;
+
   end;
 
 
   type TPGLGlyphMetrics = record
+
     Private
       Width, Height: GLInt;
       SDFWidth, SDFHeight: GLInt;
@@ -683,8 +704,9 @@ uses
       GlyphIndex: GLUInt;
       AsciiCode: GLUInt;
       Metrics: TPGLGlyphMetrics;
-      OutlinePoints: TArray<TFTVector>;
 
+    Private
+      OutlinePoints: TArray<TFTVector>;
       procedure GetOutlinePoints(); register;
 
     Public
@@ -693,10 +715,12 @@ uses
       Property Bearing: GLInt Read Metrics.Bearing;
       Property Advance: GLFloat Read Metrics.Advance;
       Property TailHeight: GlInt Read Metrics.TailHeight;
+
   end;
 
 
   type TPGLAtlas = record
+
     Private
       Texture: GLUInt;
       Width, Height: GLUInt;
@@ -707,8 +731,11 @@ uses
       Character: Array [0..128] of TPGLCharacter;
   end;
 
-
   type TPGLFont = class(TObject)
+    Public
+      FontName: String;
+      FontSize: GLInt;
+
     Private
       Atlas: Array of TPGLAtlas;
 
@@ -716,8 +743,6 @@ uses
       function ChooseAtlas(CharSize: GLUInt): Integer; register;
 
     Public
-      FontName: String;
-      FontSize: GLInt;
       constructor Create(FileName: String; Sizes: Array of Integer; Bold: Boolean = False); register;
   end;
 
@@ -744,10 +769,14 @@ uses
       UseTextBounds: TPGLRectF;
       UseBounds: TPGLRectF;
       UseAngle: GLFloat;
+
       CurrentAtlas: GLUint; // Assigned during FindBounds
+
       DrawPos: TPGLVector2; // The position that will be passesd to DrawTestString, either the topleft of the bounds or if centered the center - half width and half height
 
+    Private
       procedure FindBounds(); register;
+
       function FindPosition(): TPGLVector2; register;
       function FindTopLeft(): TPGLVector2; register;
       function FindWidth(): integer; register;
@@ -778,6 +807,7 @@ uses
       procedure SetGradientColors(LeftColor, RightColor: TPGLColorF); register;
       procedure SetUseGradientColors(UseGradient: Boolean = true); register;
       procedure SetGradientXOffSet(XOffSet: GLFLoat); register;
+
       procedure WrapText(WrapWidth: GLFloat); register;
 
       Property Text: String read UseText write SetText;
@@ -798,8 +828,8 @@ uses
       Property MultiLineBounds: TPGLRectF Read UseMultiLineBounds;
       Property Smooth: Boolean read UseSmooth;
       Property Angle: GLFloat Read UseAngle;
-  end;
 
+  end;
 
   type TPGLTextTag = record
     Bold: Boolean;
@@ -854,8 +884,10 @@ uses
 
 
 	type TPGLRenderTarget = class(TPersistent)
+
     Private
       ResizeFunc: pglFrameResizeFunc;
+
       pWidth,pHeight: GLUint;
       pDrawOffSet: TPGLVector2;
       pTextSmoothing: Boolean; // Text Smoothing Enabled
@@ -864,11 +896,13 @@ uses
       pShadowType: GLFloat;
 
   	Public
+
       FrameBuffer: GLUInt;
       Texture: GLUInt;
       Texture2D: GLUInt;
       LightMap: GLUInt;
       DepthBuffer: GLUint;
+
       RenderRect: TPGLRectF;
       ClipRect: TPGLRectF;
       ColorVals: TPGLColorF;
@@ -884,6 +918,7 @@ uses
       pClearColorBuffers: Boolean;
       pClearDepthBuffer: Boolean;
       pGlobalLight: glFloat;
+
       Buffers: TPGLBufferCollection;
       Ver: TPGLVectorQuad;
       Cor: TPGLVectorQuad;
@@ -891,6 +926,8 @@ uses
       Rotation: TPGLMatrix4;
       Scale: TPGLMatrix4;
       Translation: TPGLMatrix4;
+
+
       Points: TPGLPointBatch;
       Circles: TPGLCircleBatch;
       Polys: TPGLPolygonBatch;
@@ -900,10 +937,13 @@ uses
       TextureBatch: TPGLTextureBatch;
       LineBatch: TPGLShapeBatch;
       GeoMetryBatch: TPGLGeometryBatch;
+
       DrawState: AnsiString;
+
       ClearRect: TPGLRectF;
 
     Private
+
       procedure FillEBO(); register;
       procedure DrawTextString(Text: String; Font: TPGLFont; Size: GLInt; Bounds: TPGLRectF;
         BorderSize: GLUInt; Color,BorderColor: TPGLColorI; UseGradient: Boolean; GradientLeft: TPGLColorF;
@@ -911,7 +951,9 @@ uses
 
       procedure DrawTextCharacters(CharQuads,TexQuads: Array of TPGLVectorQuad; TextWidth,TextHeight: GLUInt); register;
 
+
     Public
+
       constructor Create(inWidth,inHeight: GLInt);
       procedure UpdateVertices(); register;
       procedure UpdateCorners(); register;
@@ -950,18 +992,24 @@ uses
       procedure DrawCircle(CenterX, CenterY, inWidth, inBorderWidth: GLFloat; inFillColor, inBorderColor: TPGLColorF); Overload; register;
       procedure DrawCircle(Center: TPGLVector2; inWidth, inBorderWidth: GLFloat; inFillColor, inBorderColor: TPGLColorI); Overload; register;
       procedure DrawCircle(Center: TPGLVector2; inWidth, inBorderWidth: GLFloat; inFillColor, inBorderColor: TPGLColorF; FadeToOpacity: GLFloat = 1); Overload; register;
+
       procedure DrawEllipse(Center: TPGLVector2; XLength,YLength,Angle: GLFloat; Color: TPGLColorI); register;
+
       procedure DrawGeometry(Points: Array of TPGLVector2; Color: Array of TPGLColorF); register;
+
       procedure DrawRegularPolygon(NumVertices: GLInt; Center: TPGLVector2; Radius,Angle: GLFloat; Color: TPGLColorI); register;
+
       procedure DrawPoint(CenterX,CenterY,Size: GLFloat; inColor: TPGLColorI); Overload;
       procedure DrawPoint(CenterX,CenterY,Size: GLFloat; inColor: TPGLColorF); Overload;
       procedure DrawPoint(Center: TPGLVector2; Size: GLFloat; inColor: TPGLColorI); Overload;
       procedure DrawPoint(Center: TPGLVector2; Size: GLFloat; inColor: TPGLColorF); Overload;
       procedure DrawPoint(PointObject: TPGLPoint); Overload;
+
       procedure DrawRectangle(Center: TPGLVector2; inWidth,inHeight,inBorderWidth: GLFloat; inFillColor,inBorderColor: TPGLColorI; inCurve: GLFloat = 0); Overload; register;
       procedure DrawRectangle(Center: TPGLVector2; inWidth,inHeight,inBorderWidth: GLFloat; inFillColor,inBorderColor: TPGLColorF; inCurve: GLFloat = 0); Overload; register;
       procedure DrawRectangle(Bounds: TPGLRectF; inBorderWidth: GLFloat; inFillColor,inBorderColor: TPGLColorI; inCurve: GLFloat = 0); Overload; register;
       procedure DrawRectangle(Bounds: TPGLRectF; inBorderWidth: GLFloat; inFillColor,inBorderColor: TPGLColorF; inCurve: GLFloat = 0); Overload; register;
+
       procedure DrawLine(P1,P2: TPGLVector2; Width,BorderWidth: GLFloat; FillColor, BorderColor: TPGLColorF); register;
       procedure DrawLine2(P1,P2: TPGLVector2; Width,BorderWidth: GLFloat; FillColor,BorderColor: TPGLColorF; SmoothEdges: Boolean = False); register;
       procedure DrawSprite(Var Sprite: TPGLSprite); register;
@@ -969,11 +1017,13 @@ uses
       procedure DrawLightCircle(Center: TPGLVector2; Color: TPGLColorI; Radiance,Radius: GLFloat); register;
       procedure DrawLightFan(Center: TPGLVector2; Color: TPGLColorI; Radiance: GLFloat; Radius,Angle,Spread: GLFloat); register;
       procedure DrawLightFanBatch(); register;
+      procedure ApplyLights(); register;
+
       procedure DrawText(Text: TPGLText); Overload; register;
       procedure DrawText(Text: String; Font: TPGLFont; Size: GLInt; Position: TPGLVector2; BorderSize: GLUInt; Color,BorderColor: TPGLColorI; Shadow: Boolean = False); Overload; register;
 
+
       // Effects
-      procedure ApplyLights(); register;
       procedure Swirl(Target: TPGLRenderTarget; DestRect,SourceRect: TPGLRectF); register;
       procedure Pixelate(PixelRect: TPGLRectF; PixelSize: GLFloat = 2); register;
       procedure Smooth(Area: TPGLRectF; IgnoreColor: TPGLColorI); register;
@@ -1009,7 +1059,10 @@ uses
   end;
 
 
+
+
   type TPGLRenderTexture = class(TPGLRenderTarget)
+
     Private
       Angle: GLFloat;
       Opacity: GLFloat;
@@ -1018,6 +1071,7 @@ uses
       pisMultiSampled: Boolean;
       pBitDepth: GLInt;
       pPixelFormat: GLInt;
+
 
       procedure SetDrawBuffers(Buffers: Array of GLEnum); register;
       procedure SetPixelFormat(); register;
@@ -1033,17 +1087,26 @@ uses
       procedure SetLinearFilter(); register;
 
       // blting
+
       procedure Blt(Dest: TPGLRenderTarget; destX, destY, destWidth, destHeight, srcX, srcY: GLFloat); Overload; register;
       procedure Blt(Dest: TPGLRenderTarget; DestRect, SourceRect: TPGLRectI); Overload; register;
+
       procedure StretchBlt(Dest: TPGLRenderTarget; destX, destY, destWidth, destHeight, srcX,srcY,srcWidth,srcHeight: GLFloat); Overload; register;
       procedure StretchBlt(Dest: TPGLRenderTarget; destRect,srcRect: TPGLRectI); Overload; register;
       procedure StretchBlt(Dest: TPGLRenderTarget; destRect,srcRect: TPGLRectF); Overload; register;
+
       procedure BlendBlt(Dest: TPGLRenderTarget; destX, destY, destWidth, destHeight, srcX,srcY,srcWidth,srcHeight: GLFloat); Overload; register;
       procedure BlendBlt(Dest: TPGLRenderTarget; DestRect,SourceRect: TPGLRectF); Overload; register;
+
       procedure CopyBlt(Dest: TPGLRenderTarget; destX, destY, destWidth, destHeight, srcX,srcY,srcWidth,srcHeight: GLFloat); Overload; register;
       procedure CopyBlt(Dest: TPGLRenderTarget; DestRect,SourceRect: TPGLRectF); Overload; register;
+
       procedure ChangeTexture(Texture: TPGLTexture); register;
       procedure RestoreTexture(); register;
+
+
+      // Effects
+
       procedure SaveToFile(FileName: String; Channels: Integer = 4); register;
       procedure SetMultiSampled(MultiSampled: Boolean); register;
 
@@ -1053,6 +1116,7 @@ uses
 
 
   type TPGLRenderMap = class(TPGLRenderTarget)
+
     {
      The intent of the Render Map is to provide a large background or map image
      that can be easily 'chunked' into a grid or array to act as a collection of
@@ -1090,18 +1154,25 @@ uses
       procedure MoveSelectionRect(ByX,ByY: GLUInt); register;
       procedure SetSelectionRect(Left,Top: GLUInt); register;
       procedure UpdateImageSelection(); register;
+
       procedure SetViewPortSize(Width,Height: GLUInt); register;
       procedure MoveViewPort(ByX,ByY: GLUInt); register;
       procedure SetViewPort(Left,Top: GLUInt); register;
+
       function RetrievePixelsFromMemory(SRect: TPGLRectI): TColorArray; register;
 
     Private
+
       procedure WriteSelectionToImage(); register;
       procedure GetSelectionFromImage(X,Y: GLUInt); register;
   end;
 
 
+
   type TPGLWindow = class(TPGLRenderTarget)
+
+    // Fields
+
     Private
       TempBuffer: GLUInt;
       pOrgWidth,pOrgHeight: GLUInt;
@@ -1109,19 +1180,27 @@ uses
       pTitleBar: Boolean;
       pTitle: String;
       pDisplayRect: TPGLRectF;
+
       pDisplayRectUsing: Boolean;
       pDisplayRectOrigin: TPGLVector2;
       pDisplayRectScale: Boolean;
       pDisplayRectOrgWidth: GLInt;
       pDisplayRectOrgHeight: GLInt;
 
-      constructor Create(inWidth,inHeight: GLInt); register;
-      procedure onResize(); register;
-
     Public
       Handle: HWND;
       osHandle: LongInt;
 
+    // Methods
+
+    Private
+      constructor Create(inWidth,inHeight: GLInt); register;
+      procedure onResize(); register;
+
+    Public
+
+//      Property Width: GLUInt read pWidth;
+//      Property Height: GLUInt read pHeight;
       Property OrgWidth: GLUInt read pOrgWidth;
       Property OrgHeight: GLUInt read pOrgHeight;
       Property FullScreen: Boolean read pFullScreen;
@@ -1131,6 +1210,7 @@ uses
 
       procedure Close(); register;
       procedure DisplayFrame(); register;
+
       procedure SetSize(W,H: GLUInt); register;
       procedure SetFullScreen(isFullScreen: Boolean); register;
       procedure SetTitleBar(hasTitleBar: Boolean); register;
@@ -1151,38 +1231,47 @@ uses
     Location: GLInt;
   end;
 
-
   type TPGLProgram = class
-    Private
-      UniformCount: GLInt;
-      Uniform: Array of TPGLUniform;
 
-      function SearchUniform(uName: String): GLInt; register;
-      procedure AddUniform(uName: string; Location: GLInt); register;
     Public
+
       ProgramName: String;
+
       Valid: Boolean;
       ShaderProgram: GLInt;
       VertexShader: GLInt;
       FragmentShader: GLInt;
       GeometryShader: GLInt;
 
+    Private
+      UniformCount: GLInt;
+      Uniform: Array of TPGLUniform;
+
+      function SearchUniform(uName: String): GLInt; register;
+      procedure AddUniform(uName: string; Location: GLInt); register;
+
+    Public
+
       constructor Create(Name: String; VertexShaderPath, FragmentShaderPath: String; GeometryShaderPath: String = '');
       procedure Use(); register;
-  end;
 
+  end;
 
   type TPGLMonitor = record
     X,Y,Width,Height: GLInt;
   end;
 
 
+
   type TPGLState = record
+
     Private
       pMaxTextureSize: GLInt;
+
       InitWidth, InitHeight: GLInt;
       GlobalLight: GLFloat;
       DefaultMaskColor: TPGLColorF;
+
       DefaultReplace: Array of Array [0..1] of TPGLColorI;
 
       // States
@@ -1207,6 +1296,16 @@ uses
       ShadowMap: GLUint;
       ShadowTarget: TPGLRenderTarget;
 
+    Public
+      Context: TPGLContext;
+      Window: TPGLWindow;
+      Handle: HWND;
+      OSHandle: pointer;
+      Screen: TPGLMonitor;
+      VideoMode: DEVMODE;
+
+    Private
+
       procedure AddRenderTexture(Source: TPGLRenderTexture); register;
       procedure AddTextureObject(Var TexObject: TPGLTexture); register;
       procedure RemoveTextureObject(Var TexObject: TPGLTexture); register;
@@ -1216,18 +1315,14 @@ uses
       procedure BindTexture(TextureUnit: GLUInt; Texture: GLUInt); register;
       procedure UnBindAll(); register;
       procedure UnBindTexture(TexName: GLUint); register;
+
       procedure VBOSubData(Binding: glEnum; OffSet: GLInt; Size: GLInt; Source: Pointer); register;
       procedure SSBOSubData(Binding: glEnum; OffSet: GLInt; Size: GLInt; Source: Pointer); register;
       function GetNextVBO(): GLInt; register;
       function GetNextSSBO(): GLInt; register;
 
+
     Public
-      Context: TPGLContext;
-      Window: TPGLWindow;
-      Handle: HWND;
-      OSHandle: pointer;
-      Screen: TPGLMonitor;
-      VideoMode: DEVMODE;
 
       class operator Initialize(Out Dest: TPGLState); register;
       procedure UpdateWindowBounds(); register;
@@ -1235,6 +1330,7 @@ uses
       procedure AddDefaultColorReplace(Color,NewColor: TPGLColorI); register;
       procedure DestroyImage(Var Image: TPGLImage); register;
       procedure GetInputDevices(var KeyBoard: TPGLKeyboard; var Mouse: TPGLMouse; var Controller: TPGLController); register;
+
       function GetTextureCount(): NativeUInt; register;
 
       Property GetViewPort: TPGLRectI read ViewPort;
@@ -1253,43 +1349,36 @@ uses
     procedure CopyFrom(Sprite: TPGLSprite; X,Y,Width,Height: GLInt); Overload; register;
   end;
 
-
   type
     TPGLImageHelper = class Helper for TPGLImage
     constructor CreateFromTexture(Var Source: TPGLTexture); register;
     procedure CopyFromTexture(Var Source: TPGLTexture); register;
   end;
 
-
   type TPGLColorIHelper = record Helper for TPGLColorI
     function IsColor(CompareColor: TPGLColorF; Tolerance: Double = 0): Boolean; OverLoad; register;
     function IsColor(CompareColor: TPGLColorI; Tolerance: Double = 0): Boolean; OverLoad; register;
   end;
-
 
   type TPGLColorFHelper = record Helper for TPGLColorF
     function IsColor(CompareColor: TPGLColorI; Tolerance: Double = 0): Boolean; OverLoad; register;
     function IsColor(CompareColor: TPGLColorF; Tolerance: Double = 0): Boolean; OverLoad; register;
   end;
 
+  TPGLRectFHelper = record helper for TPGLRectF
+      function toRectI(): TPGLRectI;
+      function toPoints(): TPGLVectorQuad;
+      function CheckInside(Pos: TPGLVector2): Boolean; register;
+    end;
 
-  Type TPGLRectFHelper = record helper for TPGLRectF
-    function toRectI(): TPGLRectI;
-    function toPoints(): TPGLVectorQuad;
-    function CheckInside(Pos: TPGLVector2): Boolean; register;
-  end;
-
-  Type TPGLRectIHelper = record helper for TPGLRectI
-    function toRectF(): TPGLRectF;
-    function toPoints(): TPGLVectorQuad;
-    function CheckInside(Pos: TPGLVector2): Boolean; register;
-  end;
+    TPGLRectIHelper = record helper for TPGLRectI
+      function toRectF(): TPGLRectF;
+      function toPoints(): TPGLVectorQuad;
+      function CheckInside(Pos: TPGLVector2): Boolean; register;
+    end;
 
 
-  //////////////////////////////////////////////////////////////////////////////
-  //////////////////// Global Procedures and Functions /////////////////////////
-  //////////////////////////////////////////////////////////////////////////////
-
+	// Init, config and callback
   procedure pglInit(Var AWindow: TPGLWindow; AWidth,AHeight: GLInt; ATitle: String; AWindowAttributes: TPGLWindowFlags); register;
   procedure pglSetColorFormats(AWindowAttributes: TPGLWindowFlags); register;
   procedure pglGetWindowColorFormat(); register;
@@ -1364,7 +1453,8 @@ uses
   procedure pglSetEllipseInterval(Interval: GLInt = 10); register;
 
   function ImageDesc(Source: Pointer; Width,Height: GLUInt): TPGLImageDescriptor; register;
-  function pglPixelFromMemory(Source: Pointer; X,Y,Width,Height: GLInt): TPGLColorI; register;
+  function PGLPixelFromMemory(Source: Pointer; X,Y,Width,Height: GLInt): TPGLColorI; register;
+
 
   function FindTextLineBreak(Var Text:String): Integer; register;
   function FindTextTags(Var Text:String): TPGLTextTagArray; register;
@@ -1393,9 +1483,11 @@ uses
   procedure TransformToBuffer(Out Points: TPGLVectorQuad; BuffWidth,BuffHeight: GLFloat); register;
   procedure TransformToTexture(Out Points: TPGLVectorQuad; TexWidth,TexHeight: GLFloat); register;
 
+
+
   // Shader functions
-  function pglGetUniform(Uniform: String): GLInt; register;
-  procedure pglUseProgram(ShaderProgramName: String); register;
+  function PGLGetUniform(Uniform: String): GLInt; register;
+  procedure PGLUseProgram(ShaderProgramName: String); register;
 
 Var
 
