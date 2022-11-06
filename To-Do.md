@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #################################################
 High Priority
 #################################################
@@ -24,3 +25,6 @@ conventions
 -- review function and variable names to ensure that they are appropriately
 descriptive
 -- remove redundant/uneeded class functions
+=======
+
+>>>>>>> 80bd354aa58914ce9c7dd8655b9bf5c77db8d4a1

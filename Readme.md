@@ -1,6 +1,7 @@
 PascalGL is a work in progress 2D framework that includes custom written windowing and OpenGL context creation, rendering via "pgl" classes and the provided shaders, handling of mouse, keyboard and controller input, audio capabilities through OpenAL, text shaping and rendering with FreeType 2, and basic "clock" functionality.
 
 Currently, PGL is only supported with Delphi on Windows, 32 and 64 bit builds.
+The current state has known bugs. Functionality from the user's perspective is inconsistent (pglRenderTexture.SetColorValues() vs. pglSprite.SetColors() and similar).
 
 In order to use PGL in a project, add the provided directories to your compiler search path:
 /Source
