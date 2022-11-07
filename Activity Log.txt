@@ -1,0 +1,31 @@
+2022-11-07
+	- Updated "Sprite Batch" and "Texture Default" shaders. Made changes
+to avoid shader recompiles at runtime.
+
+	- Moved array "ProgramList" for list of compiled shaders to be a
+memeber of TPGLState and not accessible by the user.
+
+	- Changed how instances of TPGLProgram are added to the "ProgramList"
+array. 
+
+(------------------------------------------------------------------------)
+
+2022-11-06
+	- Made progress on converting all Type, Class, Record, Procedure and
+Function, and variable names to adhere to Pascal/Delphi naming conventions.
+
+	- Made progress on changing Procedure and Function parameter names
+in order to adhere to Pascal/Delphi naming conventions.
+
+	- Implimented functionality for the user to change the OpenGL
+glBlendFunc at the TPGLRenderTarget level. Added fBlendFactors array to
+TPGLRenderTarget and procedure SetBlendFactors() which accepts 2 enum values
+form new TPGLBlendValue(needs to be renamed) set. The use of the TPGLBlendValue 
+set is intended to give the user a way to "look up" the 
+blending values via dot operator at design time. When a TPGLRenderTarget
+calls MakeCurrentTarget before executing a draw batch, the OpenGL glBlendFunc
+is updated to match the fBlendFactors values if they differ from the current
+glBlendFunc state. This allows the user to better control how blending is
+handled on a per pixel basis if they choose to. By default, each TPGLRenderTarget's
+fBlendFactors values are SOURCE_ALPHA and ONE_MINUS_SOURCE_ALPHA, which are
+the same as GL_SRC_ALPHA and GL_ONE_MINUS_SRC_ALPHA respectively. 
