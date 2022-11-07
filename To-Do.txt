@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 #################################################
 High Priority
 #################################################
@@ -6,6 +6,10 @@ High Priority
 - Documentation
 -- Add/modify comments to classes/records and functions
 -- Start documentaion on 'specification'
+
+- Consistency/Structure
+-- Review code base, decide on new structure, i.e. splitting class and record types off into their
+   own unit(s), creating a unit for user useable types to be included in interface of user units.
 
 - Bugs/Functionality
 -- Windowing - Window size and client area can become incorrect when switching between
@@ -44,6 +48,3 @@ descriptive
 
 - Functionality
 -- Reimpliment shadows
-=======
-
->>>>>>> 80bd354aa58914ce9c7dd8655b9bf5c77db8d4a1
