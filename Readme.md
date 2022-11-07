@@ -3,6 +3,8 @@ PascalGL is a work in progress 2D framework that includes custom written windowi
 Currently, PGL is only supported with Delphi on Windows, 32 and 64 bit builds.
 The current state has known bugs. Functionality from the user's perspective is inconsistent (pglRenderTexture.SetColorValues() vs. pglSprite.SetColors() and similar).
 
+Additionally, the entire codebase needs to be restructured. Expect large changes to the structure.
+
 In order to use PGL in a project, add the provided directories to your compiler search path:
 /Source
 /TextShaping4Delphi
