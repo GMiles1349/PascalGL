@@ -45,11 +45,8 @@ uniform float ShadowVal = 0;
 void main(){
 
     float Max;
-    vec4 backcolor;
-    ivec2 backsize = textureSize(tex[31],0);
 
     FragColor = texture(tex[fSlot[T]],vCoord);
-    backcolor = texture(tex[31],vec2(gl_FragCoord.x / backsize.x, 1 - (gl_FragCoord.y / backsize.y)));
 
 
     if (FragColor == fMaskColor[T] || FragColor.w == 0){
@@ -74,10 +71,6 @@ void main(){
 
         
         FragColor.w = FragColor.w * fOpacity[T];
-        // backcolor = backcolor * (1-FragColor.w);
-        // FragColor = FragColor + vec4(vec3(backcolor),0);
-
-
     }
     
 
