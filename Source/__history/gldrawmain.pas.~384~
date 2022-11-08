@@ -94,19 +94,28 @@ uses
   {----------------------------------------------------------------------------}
 
   type TPGLBitMapBuffer = packed record
+    // 14 Byte header
     TypeChar: WORD;
-    BitMapSize: DWORD;
+    FileSize: DWORD;
     Reserved1: WORD;
     Reserved2: WORD;
     OffSet: DWORD;
+
+    // 40 byte core info
     HeaderSize: DWORD;
     Width: DWORD;
     Height: DWORD;
     Planes: WORD;
     BPP: WORD;
+    Compression: DWORD;
+    ImageSize: DWORD;
+    HRes: DWORD;
+    VRes: DWORD;
+    PalleteColors: DWORD;
+    ImportantColors: DWORD;
+
     ImageData: Array of Byte;
-    OtherData: Array of Byte;
-    DataSize,OtherSize: UInt32;
+    DataSize: UInt32;
   end;
 
   type TPGLArrayIndirectBuffer = record
@@ -1507,7 +1516,11 @@ uses
   function pglGetUniform(Uniform: String): GLInt; register;
   procedure pglUseProgram(ShaderProgramName: String); register;
 
-  procedure pglReadBMP(AFileName: String); register;
+  function pglReadBMP(AFileName: AnsiString; out AWidth: GLInt; out AHeight: GLInt): Pointer; register;
+  procedure pglWriteBmp(AFileName: AnsiString; ASource: Pointer; AWidth,AHeight: GLInt; AChannels: GLInt = 4); register;
+  function pglExtractFileExtension(AFileName: AnsiString): AnsiString; register;
+  procedure pglRemoveAlphaChannel(ASource: Pointer; ADataSize: GLInt); overload; register;
+  procedure pglRemoveAlphaChannel(var ASource: TArray<Byte>); overload; register;
 
 var
 
@@ -7497,14 +7510,23 @@ constructor TPGLImage.Create(AWidth: GLUint = 1; AHeight: GLUint = 1);
 
 constructor TPGLImage.CreateFromFile(AFileName: String);
 var
-SourcePointer: PByte;
+ExtType: AnsiString;
+Source: PByte;
   begin
-    SourcePointer := stbi_load(PAnsiChar(AnsiString(AFileName)),Self.fWidth,Self.fHeight,Self.fChannels,4);
-    Self.fHandle := GetMemory((Self.fWidth * Self.fHeight) * 4);
-    Move(SourcePointer[0], Self.fHandle[0], (Self.fWidth * Self.fHeight) * 4);
-    stbi_image_free(SourcePointer);
-    Self.fValid := True;
-    Self.DefineData;
+
+    ExtType := pglExtractFileExtension(AnsiString(AFileName));
+    if ExtType = '.bmp' then begin
+      Self.fHandle := pglReadBMP(AnsiString(AFileName),Self.fWidth,Self.fHeight);
+      Self.fValid := True;
+      Self.DefineData;
+
+    end else begin
+      Source := stbi_load(PAnsiChar(AnsiString(AFileName)),Self.fWidth, Self.fHeight, self.fChannels, 4);
+      Self.fHandle := GetMemory((Self.Width * Self.Height) * 4);
+      Move(Source[0], Self.fHandle[0], (Self.Width * Self.Height) * 4);
+      Self.DefineData();
+      stbi_image_free(Source);
+    end;
   end;
 
 constructor TPGLImage.CreateFromMemory(ASource: Pointer; AWidth,AHeight: NativeUInt; ASize: NativeUInt);
@@ -7554,16 +7576,22 @@ procedure TPGLImage.Clear();
 procedure TPGLImage.LoadFromFile(AFileName: AnsiString);
 // Load image data into buffer with stb, copy to handle, free stb buffer
 var
-Buffer: PByte;
-BufferSize: Long;
+ExtType: AnsiString;
+Source: PByte;
   begin
-    Self.Clear();
-    Buffer := stbi_load(PAnsiChar(AFileName),Self.fWidth,Self.fHeight,Self.fChannels,4);
-    BufferSize := (Self.fWidth * Self.fHeight) * 4;
-    Self.fHandle := GetMemory(BufferSize);
-    Move(Buffer[0],Self.fHandle[0],BufferSize);
-    FreeMemory(Buffer);
-    Buffer := Nil;
+    ExtType := pglExtractFileExtension(AFileName);
+    if ExtType = '.bmp' then begin
+      Self.Clear();
+      Self.fHandle := pglReadBmp(AFileName,Self.fWidth, Self.fHeight);
+      Self.DefineData();
+
+    end else begin
+      Source := stbi_load(PAnsiChar(AnsiString(AFileName)),Self.fWidth, Self.fHeight, self.fChannels, 4);
+      Self.fHandle := GetMemory((Self.Width * Self.Height) * 4);
+      Move(Source[0], Self.fHandle[0], (Self.Width * Self.Height) * 4);
+      Self.DefineData();
+      stbi_image_free(Source);
+    end;
   end;
 
 procedure TPGLImage.LoadFromMemory(ASource: Pointer; AWidth,AHeight: GLUInt);
@@ -10670,39 +10698,226 @@ procedure TPGLTextFormat.SetFormat(iPosition: TPGLVector2; iWidth: Integer;
 
   end;
 
-procedure pglReadBMP(AFileName: String);
+
+function pglExtractFileExtension(AFileName: AnsiString): AnsiString;
 var
-InFile: TFileStream;
-BitMap: TPGLBitMapBuffer;
-Buffer: PByte;
-I: Long;
+Len: Integer;
+SPos: Integer;
   begin
-    InFile := TFileStream.Create(AFileName,fmOpenRead);
-    InFile.Seek(0,soFromBeginning);
-    InFile.ReadBuffer(BitMap,54);
+    Len := Length(AFileName);
+    SPos := AnsiPos(AnsiString('.'),AFileName);
+    Result := LowerCase(AnsiMidStr(AFileName,SPos,Len-SPos+1));
+  end;
 
-    BitMap.DataSize := (BitMap.Width * BitMap.Height) * trunc(BitMap.BPP / 8);
-    BitMap.OtherSize := (BitMap.BitMapSize - 54 - BitMap.DataSize);
+procedure pglRemoveAlphaChannel(ASource: Pointer; ADataSize: GLInt);
+  begin
 
-    SetLength(BitMap.ImageData, Bitmap.DataSize);
-    Buffer := GetMemory((BitMap.width * BitMap.Height) * 32);
+  end;
 
-    InFile.Seek(BitMap.Offset,soFromBeginning);
-    InFile.ReadBuffer(BitMap.imageData,BitMap.DataSize);
+procedure pglRemoveAlphaChannel(var ASource: TArray<Byte>); overload;
+var
+Buffer: TArray<Byte>;
+BufferPos,SourcePos: Integer;
+I: Long;
+NewLength: Integer;
+  begin
 
-    if BitMap.BPP = 24 then begin
-      for I := 0 to trunc(BitMap.DataSize / 24) do begin
-        Move(BitMap.ImageData[I * 3], Buffer[I * 4],3);
-        Buffer[(I * 4) + 3] := 255;
+    NewLength := trunc(Length(ASource) * 0.75);
+    SetLength(Buffer,Length(ASource));
+    Move(ASource[0],Buffer[0],Length(Buffer));
+    SetLength(ASource,NewLength);
+    BufferPos := 0;
+    SourcePos := 0;
+
+    for I := 0 to trunc(NewLength / 3) - 1 do begin
+      ASource[SourcePos] := Buffer[BufferPos];
+      ASource[SourcePos + 1] := Buffer[BufferPos + 1];
+      ASource[SourcePos + 2] := Buffer[BufferPos + 2];
+      Inc(SourcePos,3);
+      Inc(BufferPos,4);
+    end;
+
+  end;
+
+
+procedure pglAlignImageData(var ASource: TArray<Byte>; AWidth,AHeight: GLInt);
+var
+ByteWidth: GLInt;
+PadSize: GLInt;
+Channels: GLInt;
+Buffer: TArray<Byte>;
+BufferPos,SourcePos: GLInt;
+NewLength: GLInt;
+I: GLInt;
+  begin
+
+    // Determine number of channels, exit if it's not 3 or 4
+    if (AWidth * AHeight) * 3 = Length(ASource) then begin
+      Channels := 3;
+    end else if (AWidth * AHeight) * 4 = Length(ASource) then begin
+      Channels := 4;
+    end else begin
+      exit;
+    end;
+
+    // get the current byte width of the data
+    ByteWidth := AWidth * Channels;
+    PadSize := ByteWidth mod 4;
+    if PadSize = 0 then begin
+      // exit if we're already aligned to 4 bytes
+      exit;
+    end;
+
+    // insert padding to rows if we're not aligned
+    SetLength(Buffer,Length(ASource));
+    Move(ASource[0],Buffer[0],Length(ASource));
+
+    // Calculate the new size of the source and resize
+    NewLength := ((ByteWidth + PadSize) * AHeight) * Channels;
+    SetLength(ASource,NewLength);
+
+    BufferPos := 0;
+    SourcePos := 0;
+
+    for I := 0 to AHeight - 1 do begin
+      Move(Buffer[BufferPos],ASource[SourcePos],ByteWidth);
+      Inc(BufferPos,ByteWidth);
+      Inc(SourcePos,ByteWidth + PadSize);
+    end;
+
+  end;
+
+function pglReadBMP(AFileName: AnsiString; out AWidth: GLInt; out AHeight: GLInt): Pointer;
+var
+BitMap: TPGLBitMapBuffer;
+Buffer: array of Byte;
+BufferPos: Integer;
+BitMapPos: Integer;
+BitWidth: Integer;
+I,R: Long;
+InFile: HFILE;
+FileStruct: OFSTRUCT;
+BytesRead: Cardinal;
+  begin
+
+    // Openg the file, get the file handle, and read the Bitmap header and info into the bitmap struct
+    InFile := OpenFile(PAnsiChar(AnsiString(AFileName)), FileStruct, OF_PROMPT or OF_READ);
+    ReadFile(InFile, BitMap, 54, BytesRead, nil);
+
+    // Get the size of the image data and size the BitMap's data array and the buffer array
+    BitMap.DataSize := BitMap.FileSize - BitMap.OffSet;
+    SetLength(BitMap.ImageData,BitMap.DataSize);
+    // Buffer array is sized to be 32bpp
+    SetLength(Buffer, (BitMap.Width * BitMap.Height) * 4);
+
+    // Read the image data from the file into the BitMap's data array
+    ReadFile(InFile, BitMap.ImageData[0], BitMap.DataSize, BytesRead, Nil);
+
+    // Set BitWidth to be the size of a row minus alignment padding
+    BitWidth := (BitMap.Width * trunc(BitMap.BPP / 8));
+    BitMapPos := 0;
+    BufferPos := 0;
+
+    // Insert alpha channel into data buffer
+    for R := 0 to BitMap.Height - 1 do begin
+      BitMapPos := BitWidth * R;
+      for I := 0 to BitMap.Width - 1 do begin
+        Move(BitMap.ImageData[BitMapPos], Buffer[BufferPos],3);
+        Buffer[BufferPos + 3] := 255;
+        Inc(BitMapPos,3);
+        Inc(BufferPos,4);
       end;
     end;
 
-    InFile.Free();
+    CloseHandle(InFile);
 
-    InFile := TFileStream.Create(AFileName + 'Copy', fmCreate or fmOpenWrite);
-    InFile.Seek(0,soFromBeginning);
+    Result := GetMemory(Length(Buffer));
+    AWidth := BitMap.Width;
+    AHeight := BitMap.Height;
 
-    InFile.Free();
+  end;
+
+
+procedure pglWriteBmp(AFileName: AnsiString; ASource: Pointer; AWidth,AHeight: GLInt; AChannels: GLInt = 4);
+var
+CheckPointer: PByte;
+CheckValue: Byte;
+DataSize: Integer;
+Buffer: TArray<Byte>;
+I,R: Integer;
+BitMapBuffer: TPGLBitMapBuffer;
+OutFile: HFILE;
+FileStruct: OFSTRUCT;
+BytesWritten: Cardinal;
+Success: LongBool;
+ErrorCode: Cardinal;
+FileClose: OVERLAPPED;
+  begin
+
+    // exit on nil pointer
+    if ASource = nil then exit;
+
+    // Check if number of channels is correct
+    CheckPointer := ASource;
+
+    try
+      // if this succeeds, then the image is 32 bpp
+      DataSize := (AWidth * AHeight) * AChannels;
+      CheckValue := CheckPointer[DataSize - 1]
+    except
+      // try to check for 24 bpp if 32 bpp check fails
+      try
+        // if this succeeds, then the image is 24 bpp
+        AChannels := 3;
+        DataSize := (AWidth * AHeight) * AChannels;
+        CheckValue := CheckPointer[DataSize - 1];
+      except
+        // if 24 bpp check fails, then exit
+        exit;
+      end;
+    end;
+
+    SetLength(Buffer,DataSize);
+    Move(ASource^,Buffer[0],DataSize);
+    If AChannels = 4 Then Begin
+      pglRemoveAlphaChannel(Buffer);
+      pglAlignImageData(Buffer,AWidth,AHeight);
+      DataSize := Length(Buffer);
+      AChannels := 3;
+    End;
+
+    // Fill buffer to write to file if checks succeeded
+    BitMapBuffer.TypeChar := MakeWord(Ord('B'),Ord('M'));
+    BitMapBuffer.FileSize := 54 + DataSize;
+    BitMapBuffer.Reserved1 := 0;
+    BitMapBuffer.Reserved2 := 0;
+    BitMapBuffer.OffSet := 54;
+    BitMapBuffer.HeaderSize := 40;
+    BitMapBuffer.Width := AWidth;
+    BitMapBuffer.Height := AHeight;
+    BitMapBuffer.Planes := 1;
+    BitMapBuffer.BPP := trunc(AChannels * 8);
+    BitMapBuffer.Compression := 0;
+    BitMapBuffer.ImageSize := DataSize;
+    BitMapBuffer.HRes := 0;
+    BitMapBuffer.VRes := 0;
+    BitMapBuffer.PalleteColors := 0;
+    BitMapBuffer.ImportantColors := 0;
+    SetLength(BitMapBuffer.ImageData,DataSize);
+    Move(Buffer[0],BitMapBuffer.ImageData[0],DataSize);
+
+    CheckPointer := @BitMapBuffer;
+    OutFile := OpenFile(PAnsiChar(AFileName),FileStruct,OF_WRITE);
+    BitMapBuffer.Reserved1 := FileStruct.Reserved1;
+    BitMapBuffer.Reserved2 := FileStruct.Reserved2;
+
+    Success := WriteFile(OutFile,CheckPointer[0],54 + DataSize,BytesWritten,nil);
+    CloseHandle(OutFile);
+
+    // Check for errors
+    If Success = False Then Begin
+      ErrorCode := GetLastError();
+    End;
 
   end;
 
