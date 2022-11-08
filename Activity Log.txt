@@ -1,4 +1,7 @@
 2022-11-07
+	- Started implimenting custom image loading and writing to eliminate
+dependency on STB.
+
 	- Updated "Sprite Batch" and "Texture Default" shaders. Made changes
 to avoid shader recompiles at runtime.
 
