@@ -93,6 +93,22 @@ uses
                                                                                }
   {----------------------------------------------------------------------------}
 
+  type TPGLBitMapBuffer = packed record
+    TypeChar: WORD;
+    BitMapSize: DWORD;
+    Reserved1: WORD;
+    Reserved2: WORD;
+    OffSet: DWORD;
+    HeaderSize: DWORD;
+    Width: DWORD;
+    Height: DWORD;
+    Planes: WORD;
+    BPP: WORD;
+    ImageData: Array of Byte;
+    OtherData: Array of Byte;
+    DataSize,OtherSize: UInt32;
+  end;
+
   type TPGLArrayIndirectBuffer = record
     // #No User Interact
     Count,InstanceCount,First,BaseInstance: GLUInt;
@@ -176,7 +192,7 @@ uses
       FragmentPath: String;
       GeometryPath: String;
 
-      constructor Create(Name: String; VertexShaderPath, FragmentShaderPath: String; GeometryShaderPath: String = '');
+      constructor Create(Name: String; VertexShaderPath, FragmentShaderPath: String; GeometryShaderPath: String = ''; AAddToList: Boolean = True);
       procedure CopyToNewProgram(var ANewProgram: TPGLProgram);
       procedure Use(); register;
   end;
@@ -1491,6 +1507,8 @@ uses
   function pglGetUniform(Uniform: String): GLInt; register;
   procedure pglUseProgram(ShaderProgramName: String); register;
 
+  procedure pglReadBMP(AFileName: String); register;
+
 var
 
   // Context
@@ -1940,7 +1958,10 @@ I,R: GLInt;
 ProgramFound: Boolean;
   begin
 
-    if Length(PGL.ProgramList) = 0 then Exit;
+    if Length(PGL.ProgramList) = 0 then begin
+      pglAddError('Shader Program List is Emtpt!');
+      Exit;
+    end;
 
     for I := 0 to High(PGL.ProgramList) Do begin
 
@@ -3742,8 +3763,6 @@ Buff: Pointer;
 
     Self.BlendFactors[0] := TPGLBlendValue.SOURCE_ALPHA;
     Self.BlendFactors[1] := TPGLBlendValue.ONE_MINUS_SOURCE_ALPHA;
-
-    Self.CopyShaders();
   end;
 
 
@@ -3769,7 +3788,6 @@ procedure TPGLRenderTarget.CopyShaders();
 var
 I,R: Long;
   begin
-    Exit;
     for I := 0 to High(PGL.ProgramList) do begin
       R := I + 1;
       SetLength(Self.Programs,R);
@@ -9214,7 +9232,7 @@ function TPGLPointCollection.Point(N: Cardinal): TPGLColorI;
 ////////////////////////////// TPGLProgram /////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
-constructor TPGLProgram.Create(Name: String; VertexShaderPath: String; FragmentShaderPath: String; GeometryShaderPath: String = '');
+constructor TPGLProgram.Create(Name: String; VertexShaderPath: String; FragmentShaderPath: String; GeometryShaderPath: String = ''; AAddToList: Boolean = True);
 var
 VerPass: Boolean;
 FragPass: Boolean;
@@ -9259,16 +9277,18 @@ I: Long;
 
     glLinkProgram(Self.ShaderProgram);
 
-    I := Length(PGL.ProgramList) + 1;
-    SetLength(PGL.ProgramList,I);
-    I := I - 1;
-    PGL.ProgramList[I] := Self;
+    if AAddToList = True then begin
+      I := Length(PGL.ProgramList) + 1;
+      SetLength(PGL.ProgramList,I);
+      I := I - 1;
+      PGL.ProgramList[I] := Self;
+    end;
 
   end;
 
 procedure TPGLProgram.CopyToNewProgram(var ANewProgram: TPGLProgram);
   begin
-    ANewProgram := TPGLProgram.Create(Self.ProgramName, Self.VertexPath, Self.FragmentPath, Self.GeometryPath);
+    ANewProgram := TPGLProgram.Create(Self.ProgramName, Self.VertexPath, Self.FragmentPath, Self.GeometryPath,False);
   end;
 
 
@@ -10647,6 +10667,42 @@ procedure TPGLTextFormat.SetFormat(iPosition: TPGLVector2; iWidth: Integer;
       end;
 
     end;
+
+  end;
+
+procedure pglReadBMP(AFileName: String);
+var
+InFile: TFileStream;
+BitMap: TPGLBitMapBuffer;
+Buffer: PByte;
+I: Long;
+  begin
+    InFile := TFileStream.Create(AFileName,fmOpenRead);
+    InFile.Seek(0,soFromBeginning);
+    InFile.ReadBuffer(BitMap,54);
+
+    BitMap.DataSize := (BitMap.Width * BitMap.Height) * trunc(BitMap.BPP / 8);
+    BitMap.OtherSize := (BitMap.BitMapSize - 54 - BitMap.DataSize);
+
+    SetLength(BitMap.ImageData, Bitmap.DataSize);
+    Buffer := GetMemory((BitMap.width * BitMap.Height) * 32);
+
+    InFile.Seek(BitMap.Offset,soFromBeginning);
+    InFile.ReadBuffer(BitMap.imageData,BitMap.DataSize);
+
+    if BitMap.BPP = 24 then begin
+      for I := 0 to trunc(BitMap.DataSize / 24) do begin
+        Move(BitMap.ImageData[I * 3], Buffer[I * 4],3);
+        Buffer[(I * 4) + 3] := 255;
+      end;
+    end;
+
+    InFile.Free();
+
+    InFile := TFileStream.Create(AFileName + 'Copy', fmCreate or fmOpenWrite);
+    InFile.Seek(0,soFromBeginning);
+
+    InFile.Free();
 
   end;
 

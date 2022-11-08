@@ -93,6 +93,22 @@ uses
                                                                                }
   {----------------------------------------------------------------------------}
 
+  type TPGLBitMapBuffer = packed record
+    TypeChar: WORD;
+    BitMapSize: DWORD;
+    Reserved1: WORD;
+    Reserved2: WORD;
+    OffSet: DWORD;
+    HeaderSize: DWORD;
+    Width: DWORD;
+    Height: DWORD;
+    Planes: WORD;
+    BPP: WORD;
+    ImageData: Array of Byte;
+    OtherData: Array of Byte;
+    DataSize,OtherSize: UInt32;
+  end;
+
   type TPGLArrayIndirectBuffer = record
     // #No User Interact
     Count,InstanceCount,First,BaseInstance: GLUInt;
@@ -1490,6 +1506,8 @@ uses
   // Shader functions
   function pglGetUniform(Uniform: String): GLInt; register;
   procedure pglUseProgram(ShaderProgramName: String); register;
+
+  procedure pglReadBMP(AFileName: String); register;
 
 var
 
@@ -3745,8 +3763,6 @@ Buff: Pointer;
 
     Self.BlendFactors[0] := TPGLBlendValue.SOURCE_ALPHA;
     Self.BlendFactors[1] := TPGLBlendValue.ONE_MINUS_SOURCE_ALPHA;
-
-    Self.CopyShaders();
   end;
 
 
@@ -7334,8 +7350,6 @@ I: Long;
 
     Self.fBlendFactors[0] := TPGLBlendValue.SOURCE_DEFAULT;
     Self.fBlendFactors[1] := TPGLBlendValue.DEST_DEFAULT;
-
-    Self.CopyShaders();
   end;
 
 
@@ -10653,6 +10667,42 @@ procedure TPGLTextFormat.SetFormat(iPosition: TPGLVector2; iWidth: Integer;
       end;
 
     end;
+
+  end;
+
+procedure pglReadBMP(AFileName: String);
+var
+InFile: TFileStream;
+BitMap: TPGLBitMapBuffer;
+Buffer: Array of Byte;
+I: Long;
+  begin
+    InFile := TFileStream.Create(AFileName,fmOpenRead);
+    InFile.Seek(0,soFromBeginning);
+    InFile.ReadBuffer(BitMap,54);
+
+    BitMap.DataSize := (BitMap.Width * BitMap.Height) * trunc(BitMap.BPP / 8);
+    BitMap.OtherSize := (BitMap.BitMapSize - 54 - BitMap.DataSize);
+
+    SetLength(BitMap.ImageData, Bitmap.DataSize);
+    SetLength(Buffer,(BitMap.Width * BitMap.Height) * 4);
+
+    InFile.Seek(BitMap.Offset,soFromBeginning);
+    InFile.ReadBuffer(BitMap.imageData[0],BitMap.DataSize);
+
+    if BitMap.BPP = 24 then begin
+      for I := 0 to trunc(BitMap.DataSize / 24) do begin
+        Move(BitMap.ImageData[I * 3], Buffer[I * 4],3);
+        Buffer[(I * 4) + 3] := 255;
+      end;
+    end;
+
+    InFile.Free();
+
+    InFile := TFileStream.Create(AFileName + 'Copy', fmCreate or fmOpenWrite);
+    InFile.Seek(0,soFromBeginning);
+
+    InFile.Free();
 
   end;
 

@@ -93,6 +93,21 @@ uses
                                                                                }
   {----------------------------------------------------------------------------}
 
+  type TPGLBitMapBuffer = packed record
+    TypeChar: WORD;
+    BitMapSize: DWORD;
+    Reserved1: WORD;
+    Reserved2: WORD;
+    OffSet: DWORD;
+    HeaderSize: DWORD;
+    Width: DWORD;
+    Height: DWORD;
+    Planes: WORD;
+    BPP: WORD;
+    ImageData: Array of Byte;
+    DataSize: UInt32;
+  end;
+
   type TPGLArrayIndirectBuffer = record
     // #No User Interact
     Count,InstanceCount,First,BaseInstance: GLUInt;
@@ -1490,6 +1505,8 @@ uses
   // Shader functions
   function pglGetUniform(Uniform: String): GLInt; register;
   procedure pglUseProgram(ShaderProgramName: String); register;
+
+  procedure pglReadBMP(AFileName: String); register;
 
 var
 
@@ -10649,6 +10666,41 @@ procedure TPGLTextFormat.SetFormat(iPosition: TPGLVector2; iWidth: Integer;
       end;
 
     end;
+
+  end;
+
+procedure pglReadBMP(AFileName: String);
+var
+InFile: TFileStream;
+BitMap: TPGLBitMapBuffer;
+Buffer: Array of Byte;
+I,R: Long;
+  begin
+    InFile := TFileStream.Create(AFileName,fmOpenRead);
+    InFile.Seek(0,soFromBeginning);
+    InFile.ReadBuffer(BitMap,54);
+
+    BitMap.DataSize := BitMap.BitMapSize - BitMap.OffSet;
+
+    SetLength(BitMap.ImageData, Bitmap.DataSize);
+    SetLength(Buffer,(BitMap.Width * BitMap.Height) * 4);
+
+    InFile.Seek(BitMap.Offset,soFromBeginning);
+    InFile.ReadBuffer(BitMap.imageData[0],BitMap.DataSize);
+
+    if BitMap.BPP = 24 then begin
+      for I := 0 to trunc(BitMap.DataSize / 24) do begin
+        Move(BitMap.ImageData[I * 3], Buffer[I * 4],3);
+        Buffer[(I * 4) + 3] := 255;
+      end;
+    end;
+
+    InFile.Free();
+
+    InFile := TFileStream.Create(AFileName + 'Copy', fmCreate or fmOpenWrite);
+    InFile.Seek(0,soFromBeginning);
+
+    InFile.Free();
 
   end;
 
