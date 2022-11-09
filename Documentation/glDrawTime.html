@@ -41,8 +41,7 @@
     <hr />
 
     <div class="Global-Functions">
-        <p></p>
-        Global Functions
+        <p style="font-size:16px">Global Functions</p>
         <p>
             <ul>
                 <li id="TimeStruct">Function <a href="#TimeStructAnchor">TimeStruct</a>(H,M: Int32; S: Double): TPGLTimeStruct;</li>
@@ -53,12 +52,10 @@
     <br />
 
     <div class="Types">
-        <p></p>
-        Unit Types
+        <p style="font-size:16px">Unit Types</p>
         <p>
             <ul>
                 <li id="pglClockEvent"> type <a href="#pglTimeEventAnchor">pglClockEvent</a> = procedure() </li>
-                <li id="TPGLTimeStruck"> type TPGLTimeTruct = Record</li>
                 <li id="TPGLTimer"> type <a href="#TPGLTimerAnchor">TPGLTimer</a> = Class(TObject)</li>
                 <li id="TPGLTimeTrigger"> type TPGLTimeTrigger = Class(TObject)</li>
                 <li id="TPGLClock"> type TPGLClock = Class(TObject)</li>
@@ -68,7 +65,7 @@
 
     <hr />
 
-    <div class="TimeStruct">
+    <div class="TimeStruct Type">
         <p class="Anchor" id="TimeStructAnchor">
             Function TimeStruct(H,M: Int32; S: Double): TPGLTimeStruct;
         </p>
@@ -84,7 +81,7 @@
 
     <hr />
 
-    <div class="pglTimeEvent">
+    <div class="pglTimeEvent Type">
         <p class="Anchor" id="pglTimeEventAnchor">
             type pglTimeEvent = procedure();
         </p>
@@ -94,7 +91,9 @@
         </p>
     </div>
 
-    <div class="TPGLTimer">
+    <hr />
+
+    <div class="TPGLTimer Type">
         <p class="Anchor" id="TPGLTimerAnchor">
             Type TPGLTimer = Class(TObject)
         </p>
@@ -102,12 +101,12 @@
             <li>Property Event: pglClockEvent read fEvent;</li>
             <li>Property Duration: Double read fDuration;</li>
             <li>Property TimeRemaining: Double read fTimeRemaining;</li>
-            <li>Property iARepeating: Boolean read fRepeating;</li>
+            <li>Property isRepeating: Boolean read fRepeating;</li>
             <li>Property isActive: Boolean read fActive;</li>
             <li>Property isAssigned: Boolean read fisAssigned;</li>
-
+            <br />
             <li>Function TimePassed(): TPGLTimeStruct; Register;</li>
-
+            <br />
             <li>Constructor Create(AEvent: pglClockEvent; ADuration: Double; ARepeat: Boolean); Overload;</li>
             <li>Constructor Create(AEvent: pglClockEvent; ADuration: TPGLTimeStruct; ARepeat: Boolean); Overload;</li>
             <li>Procedure SetEvent(AEvent: pglClockEvent); Register;</li>
@@ -119,7 +118,145 @@
             <li>Procedure DeActivate(); Register;</li>
             <li>Procedure ResetTime(); Register;</li>
         </ul>
+
+        <div class="Property">
+            Property Event: pglClockEvent read fEvent;
+            <p class="Member-Desc">
+                Returns the callback procedure currently assigned to the object.
+            </p> 
+        </div>
+        <div class="Property">
+            Property Duration: Double read fDuration;
+            <p class="Member-Desc">
+                Returns the total duration of the timer.
+            </p> 
+        </div>
+        <div class="Property">
+            Property TimeRemaining: Double read fTimeRemaining;
+            <p class="Member-Desc">
+                Returns the time remaining until the timer's callback procedure is executed.
+            </p> 
+        </div>
+        <div class="Property">
+            Property isRepeating: Boolean read fRepeating;
+            <p class="Member-Desc">
+                Returns True if the timer repeats.
+            </p> 
+        </div>
+        <div class="Property">
+            Property isActive: Boolean read fRepeating;
+            <p class="Member-Desc">
+                Returns the timer's active status.
+            </p> 
+        </div>
+        <div class="Property">
+            Property isAssigned: Boolean read fRepeating;
+            <p class="Member-Desc">
+                Returns True if the timer is assigned to a TPGLClock instance.
+            </p> 
+        </div>
+        <div class="Property">
+            Property isAssigned: Boolean read fRepeating;
+            <p class="Member-Desc">
+                Returns True if the timer is assigned to a TPGLClock instance.
+            </p> 
+        </div>
+
+        <br />
+        <div class="Function">
+            Function TimePassed(): TPGLTimeStruct; Register;
+            <p class="Member-Desc">
+                Returns a TPGLTimeStruct that tells how long the timer has been active.
+            </p> 
+        </div>
+        <div class="Function">
+            Constructor Create(AEvent: pglClockEvent; ADuration: Double; ARepeat: Boolean); Overload;
+            <p class="Member-Desc">
+                Creates a new instance of TPGLTimer with a callback procedure, a duration and repeating status.
+                <ul>
+                    <li>AEvent(TPGLClockEvent): Procedure to be assigned to the timer as a callback procedure.</li>
+                    <li>ADuration(Double): The Duration of the timer in seconds.</li>
+                    <li>ARepeat(Boolean): The repeating status of the timer. Timer repeats when set to True.</li>
+                </ul> 
+            </p> 
+        </div>
+        <div class="Function">
+            Constructor Create(AEvent: pglClockEvent; ADuration: TPGLTimeStruct; ARepeat: Boolean); Overload;
+            <p class="Member-Desc">
+                Creates a new instance of TPGLTimer with a callback procedure, a duration and repeating status.
+                <ul>
+                    <li>AEvent(TPGLClockEvent): Procedure to be assigned to the timer as a callback procedure.</li>
+                    <li>ADuration(TPGLTimeStruct): A TPGLTimeStruct record that provides the duration in HH:MM:SS.</li>
+                    <li>ARepeat(Boolean): The repeating status of the timer. Timer repeats when set to True.</li>
+                </ul> 
+            </p> 
+        </div>
+        <div class="Function">
+            Procedure SetEvent(AEvent: pglClockEvent); Register;
+            <p class="Member-Desc">
+                Changes the timer's callback procedure or sets it to nil.
+                <ul>
+                    <li>AEvent(TPGLClockEvent): Procedure to be assigned to the timer as a callback procedure.</li>
+                </ul> 
+            </p> 
+        </div>
+        <div class="Function">
+            Procedure SetDuration(ADuration: Double); Overload;
+            <p class="Member-Desc">
+                Changes the timer's duration. Does not restart the timer.
+                <ul>
+                    <li>ADuration(Double): The duration of the timer in seconds.</li>
+                </ul> 
+            </p> 
+        </div>
+        <div class="Function">
+            Procedure SetDuration(ADuration: TPGLTimeStruct); Overload;
+            <p class="Member-Desc">
+                Changes the timer's duration. Does not restart the timer.
+                <ul>
+                    <li>ADuration(TPGLTimeStruct): The duration of the timer in HH:MM:SS.</li>
+                </ul> 
+            </p> 
+        </div>
+        <div class="Function">
+            Procedure SetRepeating(ARepeat: Boolean = True); Register;
+            <p class="Member-Desc">
+                Changes the timer's repeating behavior. Changing this behavior does not reset the timer or make it
+                active if it is currently inactive.
+                <ul>
+                    <li>ARepeat(Boolean): New value of the timer's repeating behavior. True = repeating.</li>
+                </ul> 
+            </p> 
+        </div>
+        <div class="Function">
+            Procedure UnAssign(); Register;
+            <p class="Member-Desc">
+                If the timer is currently assigned to a TPGLClock instance, it is unassigned and made inactive.
+                <p class="Member-Desc">
+                If the timer is not currently assigned, this procedure has no effect.
+                </p>
+            </p>
+            </p> 
+        </div>
+        <div class="Function">
+            Procedure Activate(); Register;
+            <p class="Member-Desc">
+                Make the timer active and reset it's remaining time to it's duration.
+                <p class="Member-Desc">
+                If the timer is not currently active or not assigned to a TPGLClock instance, this procedure has no effect.
+                </p>
+            </p> 
+        </div>
+        <div class="Function">
+            Procedure ResetTime(); Register;
+            <p class="Member-Desc">
+                Sets the timer's remaining time to it's duration. Does not affect it's active status.
+            </p> 
+        </div>
+        
+        
     </div>
+
 
 </body>
 
