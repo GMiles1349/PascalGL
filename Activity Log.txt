@@ -1,3 +1,9 @@
+2022-11-09
+	- Made minor changes to .bmp image load/write and moved functions to
+new unit, glDrawImages.pas.
+
+(------------------------------------------------------------------------)
+
 2022-11-08
 	- Finished initial implementation of .bmp image load/write. Functions
 load images and convert to 32 bpp if the loaded image is 24 bpp. Functions
