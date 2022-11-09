@@ -46,7 +46,7 @@ Naming Conventions
 interface
 
 uses
-  glDrawContext, dglOpenGL, Windows,Classes, SysUtils, System.StrUtils, System.AnsiStrings, Math, Types, IOUtils,
+  glDrawContext, glDrawImages, dglOpenGL, Windows,Classes, SysUtils, System.StrUtils, System.AnsiStrings, Math, Types, IOUtils,
   Neslib.Stb.Image, Neslib.Stb.ImageWrite,
   uFreeType;
 
@@ -93,30 +93,7 @@ uses
                                                                                }
   {----------------------------------------------------------------------------}
 
-  type TPGLBitMapBuffer = packed record
-    // 14 Byte header
-    TypeChar: WORD;
-    FileSize: DWORD;
-    Reserved1: WORD;
-    Reserved2: WORD;
-    OffSet: DWORD;
 
-    // 40 byte core info
-    HeaderSize: DWORD;
-    Width: DWORD;
-    Height: DWORD;
-    Planes: WORD;
-    BPP: WORD;
-    Compression: DWORD;
-    ImageSize: DWORD;
-    HRes: DWORD;
-    VRes: DWORD;
-    PalleteColors: DWORD;
-    ImportantColors: DWORD;
-
-    ImageData: Array of Byte;
-    DataSize: UInt32;
-  end;
 
   type TPGLArrayIndirectBuffer = record
     // #No User Interact
@@ -1414,7 +1391,6 @@ uses
   procedure pglExitGL(); register;
   procedure pglAddError(Msg: String); register;
   procedure pglReportErrors(); register;
-  procedure PGLERRORDEBUG(AErrorStatus: glEnum); register;
 
 
   procedure pglWindowUpdate(); CDecl;
@@ -1516,12 +1492,6 @@ uses
   function pglGetUniform(Uniform: String): GLInt; register;
   procedure pglUseProgram(ShaderProgramName: String); register;
 
-  function pglReadBMP(AFileName: AnsiString; out AWidth: GLInt; out AHeight: GLInt): Pointer; register;
-  procedure pglWriteBmp(AFileName: AnsiString; ASource: Pointer; AWidth,AHeight: GLInt; AChannels: GLInt = 4); register;
-  function pglExtractFileExtension(AFileName: AnsiString): AnsiString; register;
-  procedure pglRemoveAlphaChannel(ASource: Pointer; ADataSize: GLInt); overload; register;
-  procedure pglRemoveAlphaChannel(var ASource: TArray<Byte>); overload; register;
-  procedure pglAlignImageData(var ASource: TArray<Byte>; AWidth,AHeight: GLInt); register;
 
 var
 
@@ -1676,41 +1646,10 @@ Const
 implementation
 
 
-procedure PGLERRORDEBUG(AErrorStatus: glEnum);
-
-  begin
-
-    if AErrorStatus = GL_INVALID_ENUM then begin
-      AErrorStatus := 0;
-    End Else if AErrorStatus = GL_INVALID_VALUE then begin
-      AErrorStatus := 0;
-    End Else if AErrorStatus = GL_INVALID_OPERATION then begin
-      AErrorStatus := 0;
-    End Else if AErrorStatus = GL_STACK_OVERFLOW then begin
-      AErrorStatus := 0;
-    End Else if AErrorStatus = GL_STACK_UNDERFLOW then begin
-      AErrorStatus := 0;
-    End Else if AErrorStatus = GL_OUT_OF_MEMORY then begin
-      AErrorStatus := 0;
-    end;
-
-  end;
-
-
 procedure PGLInit(var AWindow: TPGLWindow; AWidth,AHeight: GLInt; ATitle: String; AWindowAttributes: TPGLWindowFlags);
-
 var
-I: Long;
-WRect: TRect;
-L,R,T,B: Integer;
-Checkvar: GLInt;
-ExtPointer: Array of pglUbyte;
-ExtString: Array of String;
-CharTitle: TPGLCharArray;
-Samples: GLInt;
 WinForm: TPGLWindowFormat;
 WinFeats: TPGLFeatureSettings;
-
   begin
 
     // First, get the monitor and screen data so that flags can be applied correctly
@@ -1853,8 +1792,6 @@ I: GLInt;
 procedure pglWindowUpdate(); CDecl;
 var
 Col: TPGLColorF;
-Buffs: GLInt;
-
 	begin
 
     PGL.Window.DrawLastBatch();
@@ -1877,8 +1814,6 @@ Buffs: GLInt;
 
 
 procedure pglSetWindowTitle(ATitle: String);
-var
-TString: TPGLCharArray;
   begin
     PGL.Context.SetTitle(ATitle);
     PGL.Window.pTitle := ATitle;
@@ -1886,20 +1821,10 @@ TString: TPGLCharArray;
 
 
 procedure pglSetScales();
-
-var
-Center: TPGLVector2;
-OldVer: Array [0..3] of TPGLVector2;
-I: GLInt;
-wScaleX,wScaleY: GLFloat;
-
   begin
     glViewPort(0,0,PGL.initWidth,PGL.initHeight);
-
     pglScaleX := 1;
     pglScaleY := 1;
-
-
   end;
 
 
@@ -1968,8 +1893,7 @@ class operator TPGLGeometryBatch.Initialize(Out Dest: TPGLGeometryBatch);
 
 procedure PGLUseProgram(ShaderProgramName: String);
 var
-I,R: GLInt;
-ProgramFound: Boolean;
+I: GLInt;
   begin
 
     if Length(PGL.ProgramList) = 0 then begin
@@ -2049,18 +1973,13 @@ TempString: String;
   end;
 
 function PGLLoadShader(AShader: GLInt; APath: String): boolean;
-
 var
 SourceString: String;
 SourceChars: TPGLCharArray;
-Chars: Array of Char;
-I: GLInt;
 Len: GLInt;
 inString: String;
 inFile: TextFile;
 FileName: String;
-CheckString: String;
-
   begin
 
     // check for a path to the file name, if none, try shader default path
@@ -2369,7 +2288,7 @@ I,Len: Long;
 
 function ReturnRectPoints(AP1,AP2: TPGLVector2; AWidth: GLFloat): TPGLVectorQuad;
 var
-Distance, Angle: GLFloat;
+Angle: GLFloat;
   begin
 
     Angle := ArcTan2(AP2.Y - AP1.Y, AP2.X - AP1.X);
@@ -2563,8 +2482,6 @@ procedure ColorAdd(Out AColor: TPGLColorF; AAddColor: TPGLColorF; AAddAlphas: Bo
 
 
 function ColorMix(AColor1,AColor2: TPGLColorI; AFactor: GLFloat): TPGLColorI;
-var
-ColVal: GLInt;
   begin
     Result.Red := trunc((AColor1.Red + AColor2.Red) / 2);
     Result.Green := trunc((AColor1.Green + AColor2.Green) / 2);
@@ -2595,13 +2512,10 @@ CHR: TPGLCharArray;
 
 
 procedure PGLSaveTexture(Texture: GLUInt; Width,Height: GLUInt; FileName: String; MipLevel: GLUInt = 0);
-
 var
 Pixels: Array of TPGLColorI;
 I: Long;
-FileChar: TPGLCharArray;
 TexWidth, TexHeight: GLInt;
-
   begin
 
     if MipLevel > 0 then begin
@@ -2629,7 +2543,7 @@ TexWidth, TexHeight: GLInt;
 procedure PGLReplaceTextureColors(Textures: Array of TPGLTexture; Colors: Array of TPGLColorI; NewColor: TPGLColorI); register;
 var
 Count: GLInt;
-I,Z,R,T: Long;
+I,R,T: Long;
 Pixels: Array of TPGLColorI;
 
   begin
@@ -2836,6 +2750,8 @@ ColorStart: GLint;
 CurColor: GLInt;
 
   begin
+
+    {$HINTS OFF}
 
     // Start Tags with <TAG>
     // End Tags with <END>
@@ -3248,7 +3164,7 @@ K: Integer;
 
 function PGLMat3Multiply(Mat1,Mat2: TPGLMatrix3): TPGLMatrix3;
 var
-I,Z,C: Long;
+I,C: Long;
 
   begin
 
@@ -3343,7 +3259,6 @@ procedure TransformToTexture(Out Points: TPGLVectorQuad; TexWidth,TexHeight: GLF
 function PGLGetUniform(Uniform: String): GLInt;
 
 var
-R: GLInt;
 Chars: TPGLCharArray;
 
   begin
@@ -3726,10 +3641,6 @@ procedure TPGLSSBO.SubData(Binding: glEnum; Offset: GLInt; Size: GLInt; Source: 
 //////////////////////////////TPGLRenderTarget/////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 constructor TPGLRenderTarget.Create(AWidth,AHeight: GLInt);
-var
-I: GLInt;
-Checkvar: glEnum;
-Buff: Pointer;
 	begin
     // set bounds and positions
     Self.fWidth := AWidth;
@@ -3878,8 +3789,6 @@ Cor: TPGLVectorQuad;
 PixelBuffer: GLUint;
 Buffer: PByte;
 BufferSize: GLInt;
-NewBuffer: Array of Byte;
-
   begin
 
     Ver := SourceRect.ToPoints;
@@ -3931,7 +3840,6 @@ OrgPixels: PByte;
 PixelCount: GLInt;
 ImgPtr: PByte;
 ImgLoc: GLInt;
-WidthRatio, HeightRatio: GLFloat;
 
   begin
 
@@ -3954,8 +3862,6 @@ WidthRatio, HeightRatio: GLFloat;
     if (SourceRect.Width <> DestRect.Width) and (SourceRect.Height <> DestRect.Height) then begin
       // if Width and Heights are not the same, go one pixel at a time
       // Get rations between widths and heights
-      WidthRatio := SourceRect.Width / DestRect.Width;
-      HeightRatio := SourceRect.Height / DestRect.Height;
 
       for Z := 0 to DestRect.Height - 1 Do begin
         for I := 0 to DestRect.Width - 1 Do begin
@@ -3981,7 +3887,7 @@ WidthRatio, HeightRatio: GLFloat;
 
 procedure TPGLRenderTarget.UpdateFromImage(Source: TPGLImage; SourceRect: TPGLRectI);
 var
-I,Z,X,Y: Long;
+I: Long;
 Buffer: PByte;
 SourcePtr: PByte;
 SourceLoc, BufferLoc: Integer;
@@ -4011,15 +3917,11 @@ SourceLoc, BufferLoc: Integer;
 
     // Free buffer memory
     FreeMem(Buffer, (SourceRect.Width * SourceRect.Height) * 4);
-    Buffer := nil;
-    SourcePtr := nil;
 
   end;
 
 
 procedure TPGLRenderTarget.SetRenderRect(ARect: TPGLRectI);
-var
-TempRect: TPGLRectF;
   begin
     Self.fRenderRect := RectF(Vec2(ARect.x,ARect.y),ARect.Width,ARect.Height);
     Self.UpdateVertices();
@@ -4176,9 +4078,6 @@ procedure TPGLRenderTarget.SetGlobalLight(Value: GLFloat);
   end;
 
 procedure TPGLRenderTarget.Display();
-var
-Errvar: glEnum;
-ScreenVer: TPGLVectorQuad;
 	begin
 
     Self.DrawLastBatch();
@@ -4219,10 +4118,7 @@ ScreenVer: TPGLVectorQuad;
 
 procedure TPGLRenderTarget.Clear();
 var
-UseColor: TPGLColorF;
-UseColorI: TPGLColorI;
 Buffers: GLInt;
-
 	begin
 
     Self.MakeCurrentTarget;
@@ -4281,9 +4177,6 @@ Buffers: GLInt;
 procedure TPGLRenderTarget.Clear(AColor: TPGLColorI);
 var
 UseColor: TPGLColorF;
-UseColorI: TPGLColorI;
-Buffers: GLEnum;
-errvar: glenum;
   begin
 
     Self.MakeCurrentTarget();
@@ -4410,10 +4303,6 @@ procedure TPGLRenderTarget.DrawLastBatch();
 
 
 procedure TPGLRenderTarget.DrawRectangleBatch();
-
-var
-TempVer: TPGLVectorQuad;
-
   begin
 
     if Self.Rectangles.Count = 0 then Exit;
@@ -4629,10 +4518,7 @@ procedure TPGLRenderTarget.DrawLineBatch();
 
 
 procedure TPGLRenderTarget.DrawPolygonBatch();
-
 var
-I: GLInt;
-C: ^TPGLCircleBatch;
 IndirectBuffer: TPGLElementsIndirectBuffer;
   begin
 
@@ -4829,10 +4715,8 @@ procedure TPGLRenderTarget.DrawGeometry(Points: array of TPGLVector2; Color: Arr
 var
 UsePoints: Array of TPGLVector3;
 UseColor: Array of TPGLColorF;
-I,X,Y: Long;
-LowX,HighX,LowY,HighY: GLFloat;
+I: Long;
 Ptr: PByte;
-
   begin
 
     if (Self.DrawState <> 'Geometry') or (Self.GeoMetryBatch.Count >= 500) then begin
@@ -4886,7 +4770,6 @@ var
 PointCount: GLInt;
 Points: Array of TPGLVector3;
 I: Long;
-X,Y: GLFloat;
 UseAngle,AngleInc: GLFloat;
 Ptr: PByte;
 UseColor: TPGLColorF;
@@ -5067,11 +4950,10 @@ procedure TPGLRenderTarget.DrawRectangle(Bounds: TPGLRectF; inBorderWidth: GLFlo
 procedure TPGLRenderTarget.DrawLine2(P1,P2: TPGLVector2; Width,BorderWidth: GLFloat; FillColor,BorderColor: TPGLColorF; SmoothEdges: Boolean = False);
 
 var
-C,U: GLUInt;
+C: GLUInt;
 P: GLUInt;
 I: GLUInt;
 Angle: Single;
-Distance: Double;
 TempPoints: TPGLVectorQuad;
 OrgP1,OrgP2: TPGLVector2;
 
@@ -5087,7 +4969,6 @@ OrgP1,OrgP2: TPGLVector2;
     OrgP2 := P2;
 
     C := Self.LineBatch.Count;
-    U := C * 4;
     P := Self.LineBatch.PointCount;
 
     Angle := ArcTan2(OrgP2.Y - OrgP1.Y, OrgP2.X - OrgP1.X);
@@ -5138,7 +5019,6 @@ OrgP1,OrgP2: TPGLVector2;
       // end cap
 
       C := Self.LineBatch.Count;
-      U := C * 4;
       P := Self.LineBatch.PointCount;
 
       Self.LineBatch.ShapeBuffer[C].Count := 4;
@@ -5182,7 +5062,6 @@ OrgP1,OrgP2: TPGLVector2;
       // Start Cap
 
       C := Self.LineBatch.Count;
-      U := C * 4;
       P := Self.LineBatch.PointCount;
 
       Self.LineBatch.ShapeBuffer[C].Count := 4;
@@ -5229,11 +5108,6 @@ OrgP1,OrgP2: TPGLVector2;
 
 
 procedure TPGLRenderTarget.DrawLineBatch2();
-
-var
-I,Z: Long;
-X,Y: GLFloat;
-
   begin
 
     if Self.LineBatch.Count = 0 then Exit;
@@ -5274,17 +5148,14 @@ X,Y: GLFloat;
   end;
 
 procedure TPGLRenderTarget.DrawLine(P1,P2: TPGLVector2; Width,BorderWidth: GLFloat; FillColor, BorderColor: TPGLColorF);
-
 var
 P: ^Integer;
 C: ^TPGLPolygonBatch;
 Ver: Array [0..4] of TPGLVector2;
-Length: GLFloat;
 Angle: GLFloat;
 Point1,Point2: TPoint;
 Radius: GLFloat;
 I: GLInt;
-
   begin
 
     if Self.DrawState <> 'Polygon' then begin
@@ -5304,7 +5175,6 @@ I: GLInt;
     Point2.X := trunc(p2.X + Self.DrawOffSet.X);
     Point2.Y := trunc(p2.Y + Self.DrawOffSet.Y);
 
-    Length := Point1.Distance(Point2);
     Angle := Point1.Angle(Point2);
     Radius := ceil(Width / 2);
 
@@ -5347,7 +5217,6 @@ var
 I,R: GLInt;
 C: ^Integer;
 Slot: Integer;
-Mat: TPGLMatrix2;
 Ver: TPGLVectorQuad;
   begin
 
@@ -5441,13 +5310,10 @@ Ver: TPGLVectorQuad;
 
 
 procedure TPGLRenderTarget.DrawSpriteBatch();
-
 var
 I: Long;
 List: Array [0..31] of GLInt;
 IndirectBuffer: TPGLElementsIndirectBuffer;
-Buffs: Array [0..1] of glEnum;
-
   begin
 
     if Self.TextureBatch.Count = 0 then Exit;
@@ -5629,11 +5495,7 @@ Point: Array [0..2] of TPGLVector2;
 procedure TPGLRenderTarget.DrawLightFanBatch();
 
 var
-I,Z: Long;
-Elements: Array [0..1000] of GLUInt;
-CurEl: GLUInt;
 IndirectBuffer: TPGLArrayIndirectBuffer;
-
   begin
 
     if Self.LightPolygons.count = 0 then Exit;
@@ -5693,9 +5555,7 @@ IndirectBuffer: TPGLArrayIndirectBuffer;
 
 
 procedure TPGLRenderTarget.DrawLightBatch();
-
 var
-Checkvar: GLUInt;
 IndirectBuffer: TPGLElementsIndirectBuffer;
   begin
 
@@ -5817,9 +5677,6 @@ var
 SendBounds: TPGLRectF;
 SendText: String;
 ReturnSmoothing: Boolean;
-LineCount: GLint;
-I: Long;
-
   begin
 
     if Text.MultiLine = False then begin
@@ -5856,17 +5713,12 @@ procedure TPGLRenderTarget.DrawText(Text: String; Font: TPGLFont; Size: GLInt; P
 procedure TPGLRenderTarget.DrawTextString(Text: String; Font: TPGLFont; Size: GLInt; Bounds: TPGLRectF;
   BorderSize: GLUInt; Color,BorderColor: TPGLColorI; UseGradient: Boolean; GradientLeft: TPGLColorF;
   GradientRight: TPGLColorF; GradientXOffset: glFloat; Angle: GLFloat = 0; Shadow: Boolean = False);
-
-
 var
 TextWidth,TextHeight: GLFloat;
-TextBounds: TPGLVectorQuad;
 CharQuad: Array of TPGLVectorQuad;
 TexQuad: Array of TPGLVectorQuad;
 CurPos: TPGLVector2;
 CurChar: ^TPGLCharacter;
-CurQuad: ^TPGLVectorQuad;
-UseColor: TPGLColorF;
 I,R: GLInt;
 BreakLoc: GLInt;
 BreakPos: Array of GLInt;
@@ -5876,12 +5728,7 @@ AdjSize: TPGLVector2;
 UseAtlas: ^TPGLAtlas;
 RotBounds: TPGLRectF;
 RotPoints: Array [0..3] of TPGLVector2;
-Lines,Chars: GLInt;
-Targetvar: GLEnum;
-Ibuffer: TPGLElementsIndirectBuffer;
 StartQuad, QuadLength: GLint;
-Buffer: Array of GLUByte;
-
   begin
 
     DrawLastBatch();
@@ -5915,7 +5762,6 @@ Buffer: Array of GLUByte;
     RotBounds.Width := 0;
     RotBounds.Height := 0;
     TextWidth := 0;
-    Lines := 1;
 
     if Bounds.Width <> -1 then begin
       TextWidth := Bounds.Width;
@@ -5943,7 +5789,7 @@ Buffer: Array of GLUByte;
         for R := 0 to high(BreakPos) Do begin
           if I = BreakPos[R] then begin
             CurPos.y := CurPos.y + (UseAtlas.TotalHeight * AdjPer);
-            Lines := Lines + 1;
+
             CurPos.X := BorderSize;
           end;
         end;
@@ -6046,12 +5892,9 @@ Buffer: Array of GLUByte;
 
 
 procedure TPGLRenderTarget.DrawTextCharacters(CharQuads,TexQuads: Array of TPGLVectorQuad; TextWidth,TextHeight: GLUInt);
-
 var
 Param: TPGLTextFormat;
-UseColor: TPGLColorF;
 IBuffer: TPGLElementsIndirectBuffer;
-
   begin
 
     Param := Self.fTextParams;
@@ -6147,11 +5990,8 @@ NewVer,NewCor: TPGLVectorQuad;
   end;
 
 procedure TPGLRenderTarget.Pixelate(PixelRect: TPGLRectF; PixelSize: GLFloat = 2);
-
 var
 NewVer,NewCor: TPGLVectorQuad;
-checkvar: GLInt;
-
   begin
 
     Self.DrawLastBatch();
@@ -6202,14 +6042,10 @@ checkvar: GLInt;
 
 
 procedure TPGLRenderTarget.Smooth(Area: TPGLRectF; IgnoreColor: TPGLColorI);
-
 var
 NewVer,NewCor: TPGLVectorQuad;
-Checkvar: Cardinal;
 UseColor: TPGLColorF;
-Buffer: Array of Byte;
 TempTex: GLUint;
-
   begin
 
     Self.DrawLastBatch();
@@ -6266,11 +6102,8 @@ end;
 
 
 procedure TPGLRenderTarget.DrawStatic(Area: TPGLRectF);
-
 var
 Ver: Array [0..3] of TPGLVector2;
-I,Z: Long;
-
   begin
 
     Self.MakeCurrentTarget();
@@ -6389,9 +6222,7 @@ Ver,Cor: TPGLVectorQuad;
 ///////////////////////////////////////////////////////////////////////////////////////
 constructor TPGLRenderTexture.Create(inWidth: Integer; inHeight: Integer; BitCount: GLInt = 32);
 var
-I: GLInt;
 Checkvar: glEnum;
-
   begin
     inherited Create(inWidth,inHeight);
 
@@ -6500,12 +6331,8 @@ procedure TPGLRenderTexture.SetOpacity(Val: Single);
 
 
 procedure TPGLRenderTexture.SetSize(W,H: GLUInt);
-
 var
-Buffs: Array [0..1] of GLEnum;
-Checkvar: GLEnum;
 Buff: GLEnum;
-
   begin
 
     Self.MakeCurrentTarget();
@@ -6603,10 +6430,7 @@ var
 DestVer: TPGLVectorQuad; // Screen Coordinates of Destination
 DestCor: TPGLVectorQuad; // Texture Coordinates of Destination
 SourceCor: TPGLVectorQuad; // Texture Coordinates of Source
-Rot: TPGLMatrix4;
-
 SourceBounds,DestBounds: TPGLRectI;
-
   begin
 
     Self.DrawLastBatch();
@@ -6702,8 +6526,6 @@ NewCor: TPGLVectorQuad;
 NewVer: TPGLVectorQuad;
 SourceCor: TPGLVectorQuad;
 SourceRect,DestRect: TPGLRectF;
-Rot: TPGLMatrix4;
-
   begin
 
     Self.DrawLastBatch();
@@ -6784,8 +6606,6 @@ var
 NewVer: TPGLVectorQuad;
 SourceCor: TPGLVectorQuad;
 SourceRect,DestRect: TPGLRectF;
-Rot: TPGLMatrix4;
-
   begin
 
     Self.DrawLastBatch();
@@ -6858,21 +6678,16 @@ procedure TPGLRenderTexture.CopyBlt(Dest: TPGLRenderTarget; DestRect,SourceRect:
 
 procedure TPGLRenderTexture.SaveToFile(FileName: string; Channels: Integer = 4);
 var
-Succeed: LongBool;
 Pixels: Array of Byte;
-Format: glEnum;
 FileChar: TPGLCharArray;
   begin
-
-
     glBindFrameBuffer(GL_FRAMEBUFFER,Self.fFrameBuffer);
     glBindTexture(GL_TEXTURE_2D,Self.fTexture);
     SetLength(Pixels,(Self.Width * Self.Height) * 4);
     glGetTexImage(GL_TEXTURE_2D,0,GL_RGBA,GL_UNSIGNED_BYTE,Pixels);
 
     FileChar := PGLStringtoChar(FileName);
-    Succeed := stbi_write_bmp(pAnsiChar(FileChar),Self.Width,Self.Height,4,Pointer(Pixels));
-
+    stbi_write_bmp(pAnsiChar(FileChar),Self.Width,Self.Height,4,Pointer(Pixels));
   end;
 
 
@@ -6951,17 +6766,15 @@ Buffs: GLInt;
 
 
 procedure TPGLRenderTexture.RestoreTexture();
-
 var
 Pixels: PByte;
 Pixels2: PByte;
 PLoc1,PLoc2: Pointer;
 PSize: GLint;
-I,Z: Long;
+I: Long;
 OutPar: GLInt;
 OldTexture: GLUint;
 W,H: GLint;
-
   begin
 
     Self.DrawLastBatch();
@@ -7021,11 +6834,8 @@ W,H: GLint;
 ///////////////////////////////////////////////////////////////////////////////////////
 
 constructor TPGLRenderMap.Create(Width,Height,SelectionWidth,SelectionHeight,ViewPortWidth,ViewPortHeight: GLUInt);
-
 var
-ReturnTexture: GLUInt;
 I: Long;
-
   begin
 
     Inherited Create(Width,Height);
@@ -7278,9 +7088,7 @@ Pixels: TColorArray;
 CurPixel: GLUInt; // Current starting location of Pixels to write from
 SourcePtr: PByte; // Points to current address in Data being read from
 CurLine: GLUInt; // Current Scan Line of Image
-ReturnTexture: GLUInt; // the original texture bound to texture unit 0
 I: GLUInt;
-
   begin
 
     // Adjust X and Y if the selection would fall outside the bounds of the data
@@ -7329,10 +7137,6 @@ I: GLUInt;
 //////////////////////////////// TPGLWindow /////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 constructor TPGLWindow.Create(inWidth,inHeight: GLInt);
-
-var
-I: Long;
-
 	begin
     inherited;
 
@@ -7381,11 +7185,6 @@ procedure TPGLWindow.DisplayFrame();
 
 
 procedure TPGLWindow.onResize;
-
-var
-Per: GLFloat;
-NewWidth,NewHeight: GLInt;
-
   begin
 
   end;
@@ -7548,17 +7347,10 @@ Destructor TPGLImage.Destroy();
   end;
 
 procedure TPGLImage.Delete();
-var
-Ptr: PByte;
-RetVal: Integer;
   begin
     if Self.fHandle <> nil then begin
-      Try
-        RetVal := FreeMemory(Self.fHandle);
+        FreeMemory(Self.fHandle);
         Self.fHandle := Nil;
-      Except
-        Self.SaveToFile(pglEXEPath + 'Fail Test.bmp');
-      end;
     end;
   end;
 
@@ -7610,10 +7402,6 @@ procedure TPGLImage.LoadFromMemory(ASource: Pointer; AWidth,AHeight: GLUInt);
 procedure TPGLImage.CopyFromImage(var ASource: TPGLImage);
 var
 BufferSize: GLInt;
-I: GLInt;
-SourcePointer: PByte;
-CurPointer: PByte;
-ByteData: TPGLColorI;
   begin
 
     if ASource.fValid = False then begin
@@ -7675,9 +7463,6 @@ WidthRatio, HeightRatio: GLFloat;
 
     end;
 
-    OrgPtr := Nil;
-    DestPtr := Nil;
-
   end;
 
 
@@ -7718,7 +7503,7 @@ procedure TPGLImageHelper.CopyFromTexture(var Source: TPGLTexture);
 
 procedure TPGLImage.ReplaceColor(ATargetColor: TPGLColorI; ANewColor: TPGLColorI);
 var
-I,Z: GLInt;
+I: GLInt;
 Data: Array of TPGLColorI;
   begin
     SetLength(Data,(Self.Width * Self.Height) * 4);
@@ -7819,10 +7604,8 @@ AVal: Byte;
 procedure TPGLImage.ToGreyScale();
 var
 I,Len: Long;
-Color: TPGLColorI;
 Ptr: PByte;
 Max: Byte;
-
   begin
 
     Len := Self.Width * Self.Height;
@@ -7847,10 +7630,7 @@ Max: Byte;
 procedure TPGLImage.ToNegative();
 var
 I,Len: Long;
-Color: TPGLColorI;
 Ptr: PByte;
-Max: Byte;
-
   begin
 
     Len := Self.Width * Self.Height;
@@ -7874,7 +7654,7 @@ Max: Byte;
 
 procedure TPGLImage.Smooth();
 var
-I,Z,Len: Long;
+I,Len: Long;
 X,Y: Long;
 Ptr: PByte;
 SelfPtr: PByte;
@@ -7885,7 +7665,6 @@ ComColor: Array [0..3] of Integer;
 Sample: Array [0..8] of TPGLColorI;
 CurX, CurY, SamX, SamY: Long;
 Count: Long;
-
   begin
 
     if Self.DataSize = 0 then Exit;
@@ -7952,9 +7731,6 @@ Count: Long;
     end;
 
     FreeMem(CopyData);
-    Ptr := nil;
-    SelfPtr := nil;
-
   end;
 
 
@@ -7965,11 +7741,9 @@ procedure TPGLImage.SaveToFile(AFileName: string);
 
 
 procedure TPGLImage.Resize(ANewWidth, ANewHeight: GLUint);
-
 var
 OrgWidth, OrgHeight: GLUint;
 OrgData: PByte;
-NewData: PByte;
 OrgDataSize: GLInt;
 NewDataSize: GLInt;
 OrgPtr: PByte;
@@ -7979,7 +7753,6 @@ NewLoc: GLint;
 OrgRows: Array of Array of TPGLColorI;
 NewRows: Array of Array of TPGLColorI;
 WidthRatio, HeightRatio: GLFloat;
-WidthMax, HeightMax: GLUint;
 I,Z: GLInt;
   begin
 
@@ -8039,15 +7812,7 @@ I,Z: GLInt;
     Self.fHeight := ANewHeight;
 
     // Clean Up
-    Finalize(OrgData, OrgDataSize);
     FreeMem(OrgData, OrgDataSize);
-    Finalize(OrgRows[0,0], OrgWidth * OrgHeight);
-    Finalize(NewRows[0,0], ANewWidth * ANewHeight);
-    OrgData := nil;
-    NewData := nil;
-    OrgPtr := nil;
-    NewPtr := nil;
-
   end;
 
 
@@ -8083,7 +7848,6 @@ IPtr: PByte;
 procedure TPGLImage.BlendPixel(AColor: TPGLColorI; AX: Integer; AY: Integer; ASourceFactor: GLFloat);
 var
 IPtr: PByte;
-ILoc: Integer;
 DestColor: TPGLColorI;
 SourceColor: TPGLColorI;
 DestFactor: GLFloat;
@@ -8498,8 +8262,9 @@ Pixels: Array of Byte;
 procedure TPGLTexture.SetSize(AWidth,AHeight: GLUint; AKeepImage: Boolean = False);
 var
 Pixels: Array of Byte;
-KeepWidth,KeepHeight: GLUint;
   begin
+
+    // #Return to - need to impliment stretch/shrink for texture data
 
     // Cache pixels if keep image
     if AKeepImage = True then begin
@@ -8521,8 +8286,6 @@ KeepWidth,KeepHeight: GLUint;
 
 
 function TPGLTexture.Pixel(AX: Integer; AY: Integer): TPGLColorI;
-var
-IPtr: PByte;
   begin
     // #Return To
     Result := pgl_empty;
@@ -8585,7 +8348,7 @@ ImgLoc: GLInt;
     // Transfer to Image
     PixelCount := 0;
     ImgPtr := ADest.Handle;
-    ImgLoc := 0;
+    ImgLoc := 0; // Ignore hint
 
     for Z := 0 to ADestRect.Height - 1 Do begin
       for I := 0 to ADestRect.Width - 1 Do begin
@@ -8634,7 +8397,7 @@ var
 Pixels: Array of TPGLColorI;
 PixelPos: Long;
 IPtr: PByte;
-I,Z: Long;
+I: Long;
 
   begin
 
@@ -8671,18 +8434,13 @@ procedure TPGLTextureHelper.CopyFrom(var Texture: TPGLTexture; X,Y,Width,Height:
   end;
 
 procedure TPGLTextureHelper.CopyFrom(var Sprite: TPGLSprite; X,Y,Width,Height: GLInt);
-var
-Checkvar: GLInt;
   begin
-
-
     PGL.BindTexture(0,self.Handle);
     glTexImage2D(GL_TEXTURE_2D,0,PGL.TextureFormat,Width,Height,0,PGL.WindowColorFormat,GL_UNSIGNED_BYTE,nil);
     PGL.UnbindTexture(self.Handle);
 
     glCopyImageSubData(Sprite.fTexture.Handle,GL_TEXTURE_2D,0,X,Y,0,
                        Self.Handle,GL_TEXTURE_2D,0,0,0,0,Width,Height,1);
-
   end;
 
 
@@ -9031,7 +8789,6 @@ procedure TPGLSprite.UseRectSlot(ASlot: GLInt);
 
 procedure TPGLSprite.SaveToFile(AFileName: string);
 var
-Succeed: LongBool;
 Pixels: Array of TPGLColorI;
 FileChar: TPGLCharArray;
   begin
@@ -9040,15 +8797,13 @@ FileChar: TPGLCharArray;
     glGetTexImage(GL_TEXTURE_2D,0,GL_RGBA,GL_UNSIGNED_BYTE,Pixels);
     PGL.UnbindTexture(Self.Texture.Handle);
     FileChar := PGLStringToChar(AFileName);
-    Succeed := stbi_write_bmp(LPCSTR(FileChar),trunc(Self.TextureSize.X),trunc(Self.TextureSize.Y),4,Pixels);
+    stbi_write_bmp(LPCSTR(FileChar),trunc(Self.TextureSize.X),trunc(Self.TextureSize.Y),4,Pixels);
   end;
 
 
 function TPGLSprite.Pixel(AX: Integer; AY: Integer): TPGLColorI;
-var
-IPtr: PByte;
   begin
-    // Finish Later
+    // #Return to
     Result := pgl_empty
   end;
 
@@ -9060,10 +8815,7 @@ IPtr: PByte;
 procedure TPGLPointCollection.BuildFrom(Texture: TPGLTexture; X: Cardinal = 0; Y: Cardinal = 0; Width: Cardinal = 0; Height: Cardinal = 0);
 
 var
-Pixels: Array of TPGLColorI;
-I,Z,Count: Long;
 ReturnTexture: GLUInt;
-ReturnBuffeR: GLUInt;
 DestVer: TPGLVectorQuad;
 SourceCor: TPGLVectorQuad;
 SourceRect: TPGLRectF;
@@ -9108,7 +8860,6 @@ SourceRect: TPGLRectF;
 
 
     glGetIntegerV(GL_TEXTURE0,@ReturnTexture);
-    ReturnBuffer := PGL.CurrentRenderTarget;
 
     pglTempBuffer.SetSize(Width,Height);
     pglTempBuffer.MakeCurrentTarget();
@@ -9146,16 +8897,9 @@ procedure TPGLPointCollection.BuildFrom(Image: TPGLImage; X: Cardinal = 0; Y: Ca
 
 
 procedure TPGLPointCollection.BuildFrom(Sprite: TPGLSprite; X: Cardinal = 0; Y: Cardinal = 0;  Width: Cardinal = 0; Height: Cardinal = 0);
-
 var
-Pixels: Array of TPGLColorI;
-I,Z,Count: Long;
+I,Z: Long;
 ReturnTexture: GLUInt;
-ReturnBuffeR: GLUInt;
-DestVer: TPGLVectorQuad;
-SourceCor: TPGLVectorQuad;
-SourceRect: TPGLRectF;
-
   begin
 
     if X > Sprite.Width then X := trunc(Sprite.Width);
@@ -9191,8 +8935,6 @@ SourceRect: TPGLRectF;
     glGetTexImage(GL_TEXTURE_2D,0,GL_RGBA,GL_UNSIGNED_BYTE,Self.Data);
     PGL.BindTexture(0,ReturnTexture);
 
-    Count := 0;
-
     for I := 0 to Width - 1 Do begin
       for Z := 0 to Height - 1 Do begin
 
@@ -9207,20 +8949,7 @@ SourceRect: TPGLRectF;
 
 
 procedure TPGLPointCollection.BuildFrom(Data: Pointer; Width: Cardinal; Height: Cardinal);
-
-var
-Pixels: Array of TPGLColorI;
-I,Z,Count: Long;
-ReturnTexture: GLUInt;
-ReturnBuffeR: GLUInt;
-DestVer: TPGLVectorQuad;
-SourceCor: TPGLVectorQuad;
-SourceRect: TPGLRectF;
-
   begin
-
-
-
     Self.pWidth := Width;
     Self.pHeight := Height;
     Self.pcount := Width * Height;
@@ -9230,18 +8959,14 @@ SourceRect: TPGLRectF;
 
 
 procedure TPGLPointCollection.ReplaceColor(OldColor: TPGLColorI; NewColor: TPGLColorI);
-
 var
-I,Z,Count: Long;
-
+I: Long;
   begin
-
     for I := 0 to Self.Count - 1 Do begin
       if Self.Data[I].IsColor(OldColor) then begin
         Self.Data[i] := NewColor;
       end;
     end;
-
   end;
 
 
@@ -9266,9 +8991,6 @@ var
 VerPass: Boolean;
 FragPass: Boolean;
 GeoPass: Boolean;
-ExitMesssage: String;
-Err: GLInt;
-FileName: String;
 I: Long;
   begin
 
@@ -9447,8 +9169,6 @@ procedure TPGLLightSource.Place(Pos: TPGLVector2; WidthVal: GLFloat);
 ///////////////////////////////////Colors /////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 function TPGLColorI.Value: Double;
-var
-Val: GLInt;
   begin
     Result := (( Self.Alpha / 0.75) + (Self.Green / 0.50) + (Self.Green / 0.25) + (Self.Red / 0.1) ) * 255;
   end;
@@ -9525,8 +9245,6 @@ RedDiff,GreenDiff,BlueDiff,AlphaDiff: Double;
   end;
 
 function TPGLColorF.Value: Double;
-var
-Val: GLInt;
   begin
     Result := (((Self.Alpha * 255) / 0.75) + ((Self.Green * 255) / 0.5) + ((Self.Green * 255) / 0.25) + ((Self.Red * 255) / 0.1) ) * 255;
   end;
@@ -9870,8 +9588,6 @@ procedure TPGLRectF.Truncate();
 
 procedure TPGLRectF.ResizeByAngle(Angle: GLFloat);
 var
-Hyp: GLFloat;
-NewWidth,NewHeight: GLFloat;
 Points: TPGLVectorQuad;
   begin
     // Rotate corner points and set new bounds
@@ -10016,22 +9732,15 @@ procedure TPGLCharacter.GetOutlinePoints;
 
 constructor TPGLFont.Create(FileName: String; Sizes: Array of Integer; Bold: Boolean = False);
 var
-I,R,T,Z,G,J: GLInt;
+I,G: GLInt;
 LoadFlags: TFTLoadFlags;
-Buffer: Array of Byte;
-W,H: TFTF26Dot6;
+H: TFTF26Dot6;
 Face: TFTFace;
-Quad: TPGLVectorQuad;
 TW,TH: GLInt;
 TS: Integer;
-
   begin
-
-
     Face := TFTFace.Create(PansiChar(AnsiString(FileName)),0);
-
     Self.fFontName := (ExtractFileName(FileName));
-
     SetLength(Self.fFontSizes,Length(Sizes));
     SetLength(Self.Atlas,Length(Sizes));
 
@@ -10040,7 +9749,6 @@ TS: Integer;
       Self.fFontSizes[G] := Sizes[G];
 
       H := trunc(Sizes[g] * 64);
-      W := trunc(H*1.5);
 
       Face.SetCharSize(0,H,0,0);
       Self.Atlas[g].FontSize := Sizes[g];
@@ -10120,20 +9828,15 @@ TS: Integer;
     end;
 
     FT_Done_Face(Face);
-
-
   end;
 
 
 function TPGLFont.ChooseAtlas(CharSize: GLUInt): Integer;
-
 var
 Selected: GLUInt;
 CurDiff: GLInt;
 I: GLInt;
-
   begin
-
     CurDiff := 1000;
 
     Selected := 0;
@@ -10153,24 +9856,13 @@ I: GLInt;
 
 
 procedure TPGLFont.BuildAtlas(A: GLInt);
-
 var
 TotalWidth: GLFloat;
-I,R: GLInt;
+I: GLInt;
 CurrentX: GLInt;
 Ver: TPGLVectorQuad;
 Cor: TPGLVectorQuad;
-Buffer: Array Of Byte;
-Checkvar: glEnum;
-CheckWidth: GLInt;
-CurChar: ^TPGLCharacter;
-Lowest, Highest: Byte;
-Swizzle: Array [0..3] of GLInt;
-ReturnVal: ByteBool;
-
-
   begin
-
     TotalWidth := 0;
 
     for I := 0 to High(Self.Atlas[A].Character) Do begin
@@ -10207,8 +9899,6 @@ ReturnVal: ByteBool;
     for I := 31 to High(Self.Atlas[A].Character) Do begin
 
       PGL.BindTexture(0,Self.Atlas[A].Character[i].Texture);
-
-      CurChar := @Self.Atlas[A].Character[i];
 
       Self.Atlas[A].Character[i].Position.X := CurrentX;
       Self.Atlas[A].Character[i].Position.Y := Self.Atlas[A].Character[i].Bearing;
@@ -10313,15 +10003,12 @@ constructor TPGLText.Create(var AFont: TPGLFont; Chars: string);
 
 procedure TPGLText.FindBounds;
 var
-Width,Height: GLFloat;
-Highest, Lowest: GLFloat;
+Width: GLFloat;
 Len: GLInt;
 I: GLInt;
 CurChar: TPGLCharacter;
-CurFont: TPGLFont;
 UseAtlas: ^TPGLAtlas;
 AdjPer: GLFloat;
-
   begin
 
     Self.CurrentAtlas := Self.fFont.ChooseAtlas(Self.CharSize);
@@ -10333,14 +10020,8 @@ AdjPer: GLFloat;
     end;
 
     AdjPer := Self.CharSize / UseAtlas.FontSize;
-
     Len := Length(Self.fText);
-
-    Lowest := 0;
-    Highest := 0;
     Width := 0;
-    Height := 0;
-    CurFont := Self.fFont;
 
     for I := 1 to Len Do begin
       CurChar := UseAtlas.Character[Ord(Self.fText[i])];
@@ -10353,7 +10034,6 @@ AdjPer: GLFloat;
     Self.fBounds.Update(FROMLEFT);
     Self.fBounds.HEight := UseAtlas.TotalHeight * AdjPer;
     Self.fBounds.Update(FROMTOP);
-
   end;
 
 
@@ -10699,229 +10379,6 @@ procedure TPGLTextFormat.SetFormat(iPosition: TPGLVector2; iWidth: Integer;
 
   end;
 
-
-function pglExtractFileExtension(AFileName: AnsiString): AnsiString;
-var
-Len: Integer;
-SPos: Integer;
-  begin
-    Len := Length(AFileName);
-    SPos := AnsiPos(AnsiString('.'),AFileName);
-    Result := LowerCase(AnsiMidStr(AFileName,SPos,Len-SPos+1));
-  end;
-
-procedure pglRemoveAlphaChannel(ASource: Pointer; ADataSize: GLInt);
-  begin
-
-  end;
-
-procedure pglRemoveAlphaChannel(var ASource: TArray<Byte>); overload;
-var
-Buffer: TArray<Byte>;
-BufferPos,SourcePos: Integer;
-I: Long;
-NewLength: Integer;
-  begin
-
-    NewLength := trunc(Length(ASource) * 0.75);
-    SetLength(Buffer,Length(ASource));
-    Move(ASource[0],Buffer[0],Length(Buffer));
-    SetLength(ASource,NewLength);
-    BufferPos := 0;
-    SourcePos := 0;
-
-    for I := 0 to trunc(NewLength / 3) - 1 do begin
-      ASource[SourcePos] := Buffer[BufferPos];
-      ASource[SourcePos + 1] := Buffer[BufferPos + 1];
-      ASource[SourcePos + 2] := Buffer[BufferPos + 2];
-      Inc(SourcePos,3);
-      Inc(BufferPos,4);
-    end;
-
-  end;
-
-
-procedure pglAlignImageData(var ASource: TArray<Byte>; AWidth,AHeight: GLInt);
-var
-ByteWidth: GLInt;
-PadSize: GLInt;
-Channels: GLInt;
-Buffer: TArray<Byte>;
-BufferPos,SourcePos: GLInt;
-NewLength: GLInt;
-I: GLInt;
-  begin
-
-    // Determine number of channels, exit if it's not 3 or 4
-    if (AWidth * AHeight) * 3 = Length(ASource) then begin
-      Channels := 3;
-    end else if (AWidth * AHeight) * 4 = Length(ASource) then begin
-      Channels := 4;
-    end else begin
-      exit;
-    end;
-
-    // get the current byte width of the data
-    ByteWidth := AWidth * Channels;
-    PadSize := ByteWidth mod 4;
-    PadSize := 4 - PadSize;
-    if PadSize = 0 then begin
-      // exit if we're already aligned to 4 bytes
-      exit;
-    end;
-
-    // insert padding to rows if we're not aligned
-    SetLength(Buffer,Length(ASource));
-    Move(ASource[0],Buffer[0],Length(ASource));
-
-    // Calculate the new size of the source and resize
-    NewLength := ((ByteWidth + PadSize) * AHeight) * Channels;
-    SetLength(ASource,NewLength);
-
-    BufferPos := 0;
-    SourcePos := 0;
-
-    for I := 0 to AHeight - 1 do begin
-      Move(Buffer[BufferPos],ASource[SourcePos],ByteWidth);
-      Inc(BufferPos,ByteWidth);
-      Inc(SourcePos,ByteWidth + PadSize);
-    end;
-
-  end;
-
-function pglReadBMP(AFileName: AnsiString; out AWidth: GLInt; out AHeight: GLInt): Pointer;
-var
-BitMap: TPGLBitMapBuffer;
-Buffer: array of Byte;
-BufferPos: Integer;
-BitMapPos: Integer;
-BitWidth: Integer;
-I,R: Long;
-InFile: HFILE;
-FileStruct: OFSTRUCT;
-BytesRead: Cardinal;
-  begin
-
-    // Openg the file, get the file handle, and read the Bitmap header and info into the bitmap struct
-    InFile := OpenFile(PAnsiChar(AnsiString(AFileName)), FileStruct, OF_PROMPT or OF_READ);
-    ReadFile(InFile, BitMap, 54, BytesRead, nil);
-
-    // Get the size of the image data and size the BitMap's data array and the buffer array
-    BitMap.DataSize := BitMap.FileSize - BitMap.OffSet;
-    SetLength(BitMap.ImageData,BitMap.DataSize);
-    // Buffer array is sized to be 32bpp
-    SetLength(Buffer, (BitMap.Width * BitMap.Height) * 4);
-
-    // Read the image data from the file into the BitMap's data array
-    ReadFile(InFile, BitMap.ImageData[0], BitMap.DataSize, BytesRead, Nil);
-
-    // Set BitWidth to be the size of a row minus alignment padding
-    BitWidth := (BitMap.Width * trunc(BitMap.BPP / 8));
-    BitMapPos := 0;
-    BufferPos := 0;
-
-    // Insert alpha channel into data buffer
-    for R := 0 to BitMap.Height - 1 do begin
-      BitMapPos := BitWidth * R;
-      for I := 0 to BitMap.Width - 1 do begin
-        Move(BitMap.ImageData[BitMapPos], Buffer[BufferPos],3);
-        Buffer[BufferPos + 3] := 255;
-        Inc(BitMapPos,3);
-        Inc(BufferPos,4);
-      end;
-    end;
-
-    CloseHandle(InFile);
-
-    Result := GetMemory(Length(Buffer));
-    AWidth := BitMap.Width;
-    AHeight := BitMap.Height;
-
-  end;
-
-
-procedure pglWriteBmp(AFileName: AnsiString; ASource: Pointer; AWidth,AHeight: GLInt; AChannels: GLInt = 4);
-var
-CheckPointer: PByte;
-CheckValue: Byte;
-DataSize: Integer;
-Buffer: TArray<Byte>;
-I,R: Integer;
-BitMapBuffer: TPGLBitMapBuffer;
-OutFile: HFILE;
-FileStruct: OFSTRUCT;
-BytesWritten: Cardinal;
-Success: LongBool;
-ErrorCode: Cardinal;
-FileClose: OVERLAPPED;
-  begin
-
-    // exit on nil pointer
-    if ASource = nil then exit;
-
-    // Check if number of channels is correct
-    CheckPointer := ASource;
-
-    try
-      // if this succeeds, then the image is 32 bpp
-      DataSize := (AWidth * AHeight) * AChannels;
-      CheckValue := CheckPointer[DataSize - 1]
-    except
-      // try to check for 24 bpp if 32 bpp check fails
-      try
-        // if this succeeds, then the image is 24 bpp
-        AChannels := 3;
-        DataSize := (AWidth * AHeight) * AChannels;
-        CheckValue := CheckPointer[DataSize - 1];
-      except
-        // if 24 bpp check fails, then exit
-        exit;
-      end;
-    end;
-
-    SetLength(Buffer,DataSize);
-    Move(ASource^,Buffer[0],DataSize);
-    If AChannels = 4 Then Begin
-      pglRemoveAlphaChannel(Buffer);
-      pglAlignImageData(Buffer,AWidth,AHeight);
-      DataSize := Length(Buffer);
-      AChannels := 3;
-    End;
-
-    // Fill buffer to write to file if checks succeeded
-    BitMapBuffer.TypeChar := MakeWord(Ord('B'),Ord('M'));
-    BitMapBuffer.FileSize := 54 + DataSize;
-    BitMapBuffer.Reserved1 := 0;
-    BitMapBuffer.Reserved2 := 0;
-    BitMapBuffer.OffSet := 54;
-    BitMapBuffer.HeaderSize := 40;
-    BitMapBuffer.Width := AWidth;
-    BitMapBuffer.Height := AHeight;
-    BitMapBuffer.Planes := 1;
-    BitMapBuffer.BPP := trunc(AChannels * 8);
-    BitMapBuffer.Compression := 0;
-    BitMapBuffer.ImageSize := DataSize;
-    BitMapBuffer.HRes := 0;
-    BitMapBuffer.VRes := 0;
-    BitMapBuffer.PalleteColors := 0;
-    BitMapBuffer.ImportantColors := 0;
-    SetLength(BitMapBuffer.ImageData,DataSize);
-    Move(Buffer[0],BitMapBuffer.ImageData[0],DataSize);
-
-    CheckPointer := @BitMapBuffer;
-    OutFile := OpenFile(PAnsiChar(AFileName),FileStruct,OF_WRITE);
-    BitMapBuffer.Reserved1 := FileStruct.Reserved1;
-    BitMapBuffer.Reserved2 := FileStruct.Reserved2;
-
-    Success := WriteFile(OutFile,CheckPointer[0],54 + DataSize,BytesWritten,nil);
-    CloseHandle(OutFile);
-
-    // Check for errors
-    If Success = False Then Begin
-      ErrorCode := GetLastError();
-    End;
-
-  end;
 
 end.
 
