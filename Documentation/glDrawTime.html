@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="glDrawTime.css">
+    <meta charset="utf-8">
+    <title>Documentation: glDrawTime</title>
+</head>
+
+<body>
+    <div class="top">
+        <div class="title">
+            Documentation: glDrawTime.pas
+        </div>
+        <div class="subtitle">
+            User Guide
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="description">
+        <p>
+            The glDrawTime.pas unit provides "clock" and time-keeping functionality. The TPGLClock class is intended to be used
+            as a means of controlling main loop timing by setting a time interval at which the loop should iterate. The user is
+            provided with access to properties to obtain the current time in HH:MM:SS format, the current system time, the 
+            clock's last cycle duration, the current frames per second of iteration, highest recorded frames per second,
+            lowest recorded frames per second, average frames per second, as well as other properties and functionality. 
+        </p>
+        <p>
+            Additionally, the user is provided with the TPGLTimer and TPGLTimeTrigger classes.
+        </p>
+        <p>
+            TPGLTimer is intended to be used as a method of executing callback procedures at a set interval, and can be set
+            to execute once or repeat indefinitely.
+        </p>
+        <p>
+            TPGLTimeTrigger behaves similarly, with the exeception that it will execute at a specific time.
+        </p>
+    </div>
+
+    <hr />
+
+    <div class="Global-Functions">
+        <p></p>
+        Global Functions
+        <p>
+            <ul>
+                <li id="TimeStruct">Function <a href="#TimeStructAnchor">TimeStruct</a>(H,M: Int32; S: Double): TPGLTimeStruct;</li>
+            </ul>
+        </p>
+    </div>
+
+    <br />
+
+    <div class="Types">
+        <p></p>
+        Unit Types
+        <p>
+            <ul>
+                <li id="pglClockEvent"> type <a href="#pglTimeEventAnchor">pglClockEvent</a> = procedure() </li>
+                <li id="TPGLTimeStruck"> type TPGLTimeTruct = Record</li>
+                <li id="TPGLTimer"> type <a href="#TPGLTimerAnchor">TPGLTimer</a> = Class(TObject)</li>
+                <li id="TPGLTimeTrigger"> type TPGLTimeTrigger = Class(TObject)</li>
+                <li id="TPGLClock"> type TPGLClock = Class(TObject)</li>
+            </ul>
+        </p>
+    </div>
+
+    <hr />
+
+    <div class="TimeStruct">
+        <p class="Anchor" id="TimeStructAnchor">
+            Function TimeStruct(H,M: Int32; S: Double): TPGLTimeStruct;
+        </p>
+        <p>
+            TimeStruck takes 3 parameters and returns a TPGLTimeStruct structure;
+        </p>
+        <ul>
+            <li>H - An Int32 used to fill the Hours field of the structure.</li>
+            <li>M - An Int32 used to fill the Minutes field of the structure.</li>
+            <li>S - A 64 bit Double used to fill the Seconds field of the structure.</li>
+        </ul>
+    </div>
+
+    <hr />
+
+    <div class="pglTimeEvent">
+        <p class="Anchor" id="pglTimeEventAnchor">
+            type pglTimeEvent = procedure();
+        </p>
+        <p>
+            pglTimeEvent is a simple procedure type that accepts no parameters and is intended to be used to assign
+            callback procedures for the TPGLTimer and TPGLTimeTrigger classes.
+        </p>
+    </div>
+
+    <div class="TPGLTimer">
+        <p class="Anchor" id="TPGLTimerAnchor">
+            Type TPGLTimer = Class(TObject)
+        </p>
+        <ul id="TPGLTimerList">
+            <li>Property Event: pglClockEvent read fEvent;</li>
+            <li>Property Duration: Double read fDuration;</li>
+            <li>Property TimeRemaining: Double read fTimeRemaining;</li>
+            <li>Property iARepeating: Boolean read fRepeating;</li>
+            <li>Property isActive: Boolean read fActive;</li>
+            <li>Property isAssigned: Boolean read fisAssigned;</li>
+
+            <li>Function TimePassed(): TPGLTimeStruct; Register;</li>
+
+            <li>Constructor Create(AEvent: pglClockEvent; ADuration: Double; ARepeat: Boolean); Overload;</li>
+            <li>Constructor Create(AEvent: pglClockEvent; ADuration: TPGLTimeStruct; ARepeat: Boolean); Overload;</li>
+            <li>Procedure SetEvent(AEvent: pglClockEvent); Register;</li>
+            <li>Procedure SetDuration(ADuration: Double); Overload;</li>
+            <li>Procedure SetDuration(ADuration: TPGLTimeStruct); Overload;</li>
+            <li>Procedure SetRepeating(ARepeat: Boolean = True); Register;</li>
+            <li>Procedure UnAssign(); Register;</li>
+            <li>Procedure Activate(); Register;</li>
+            <li>Procedure DeActivate(); Register;</li>
+            <li>Procedure ResetTime(); Register;</li>
+        </ul>
+    </div>
+
+</body>
+
+</html>

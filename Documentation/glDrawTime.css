@@ -1,0 +1,41 @@
+body {
+    background-color: rgb(255,255,230);
+}
+
+* {
+    font-family:'Courier New', Courier, monospace;
+}
+
+.title {
+    font-size: 32px;
+    font-weight: 900;
+}
+.subtitle {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.description, .Types, .Global-Functions {
+    font-weight: 600;
+    background-color: rgb(200,200,255);
+    border: 2px;
+    border-style: double;
+    border-color: black;
+    outline-color: grey;
+}
+
+.Types {
+    background-color: rgb(200,255,200);
+}
+
+.Global-Functions {
+    background-color: rgb(200,255,200);   
+}
+
+.Anchor {
+    font-weight: 800;
+}
+
+#TPGLTimerList {
+    list-style: none;
+}
