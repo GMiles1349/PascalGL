@@ -1,3 +1,19 @@
+2022-11-23
+	- Been sick and job searching, not a lot has been done.
+	- Over the last several days, began toying with implementing 3D
+	functionality outside of the source units. Implemented a TPGLCamera
+	class and wrote functions for inefficiently drawing arbitrary,
+	textured and UV mapped geometry that accepts the Camera's stored
+	View and Perspective/Orthographic matrices. Now, I am contemplating
+	whether to impliment this 3D camera functionality into the project or
+	to create a second project in the future that is 3D centric. Camera
+	integration into the current project will most likely necessitate
+	writing new and seperate drawing functions for current classes, or
+	otherwise a rewrite of current drawing functions and/or reimplimentation
+	of "drawable" classes.
+
+(------------------------------------------------------------------------)
+
 2022-11-09
 	- Made minor changes to .bmp image load/write and moved functions to
 new unit, glDrawImages.pas.
