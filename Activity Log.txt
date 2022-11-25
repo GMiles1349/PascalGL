@@ -1,5 +1,69 @@
+2022-11-24
+	- More work done on prototype 3D camera class implimentation.
+	It is still not contained in a PGL source unit, so as to avoid
+	having to rewrite any changes that would need to be made due to
+	experimenting with the camera and 3D geometry.
+	
+	- For the moment, the decision has been made to go ahead and
+	impliment the camera functionality into the main source units
+	after a functioning and refinded prototype has been finished.
+	The intent is for the TPGLState instance to contain a "default"
+	camera that has a rotation, scale, and translation matrices that
+	account for the size, rotation, and draw offset of the currently 
+	bound framebuffer, and a view and orthographic projection matrices
+	that are just identity matrices so as not to further transform
+	the vertices passed to shaders. This will serve as the default
+	2D camera, and all vertices will be drawn to the window according
+	to the window space coordinates that the user normally passes to
+	drawing functions.
+	
+	If a user wishes to impliment another camera, whether 2D or 3D,
+	they will be able to create an instance of TPGLCamera and control
+	it's projection type, direction, rotation, etc... Then, the user
+	will be able to call PGL.UseCamera(var ACamera: TPGLCamera),
+	passing in their own camera to replace the default. From then on,
+	all drawing functions will use the camera that the user passed to
+	draw objects, and vertices will be transformed according to that
+	camera's matrices. It is as of now undecided if the current camera
+	should be set at the TPGLState or the TPGLRenderTarget level, or
+	if the user should be able to toggle between this behavior,
+	specifying that PGL should use the "global" camera for all draw
+	operations, or the per-TPGLRenderTarget camera.
+	
+	Having the option to toggle between a global or per-TPGLRenderTarget 
+	camera offers the user the ability to render a 3D scene to one
+	framebuffer, and then render a 2D UI overlay or similar to another
+	framebuffer to be drawn over the 3D scene. However, going forward,
+	there is going to a greater emphasis on simplicity for the user.
+	It is important that the user is not overinnundated with options
+	and forced to track the minute details of all of their render
+	targets, cameras, etc... The primary benefit of the PGL library
+	is that is abstracts the OpenGL API for the user, and tracks and
+	handles the complex OpenGL "state" so that the user can focus
+	on just placing objects on the screen where they want them
+	without having to worry about bound framebuffer objects, VAO's,
+	VBO's, textures, the active texture, uniforms, winding direction
+	and everything else that goes into displaying batches of objects.
+	Offering too many options, too much versitility introduces that
+	complexity and state tracking, making the library more cumbersome
+	and less accessible.
+	
+	There may be a sweet spot in the middle that allows flexibility
+	with a minimal increase in complexity and verbosity, but for the 
+	moment, I'm leaning toward having one active "global" camera,
+	which will force the user to manual switch cameras any time they
+	may wish to change it. In this way, there is still the functionality
+	of being able to change the camera at will and render to different
+	framebuffers with different cameras, just necesitating an extra
+	line of code each time a camera is selected in. This does have the
+	benefit of make the camera switch "visible" to the user, because
+	the switch is not hidden in PGL functions that are abstraced away.
+
+(------------------------------------------------------------------------)
+
 2022-11-23
 	- Been sick and job searching, not a lot has been done.
+	
 	- Over the last several days, began toying with implementing 3D
 	functionality outside of the source units. Implemented a TPGLCamera
 	class and wrote functions for inefficiently drawing arbitrary,
