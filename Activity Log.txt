@@ -1,3 +1,42 @@
+2022-12-11
+	- The project is undergoing a complete rewrite with a new structure
+	and design philosophy. 
+	
+	- I want to move away from using Vec2's for
+	most things, and instead use Vec3's to be able to specify depth/
+	distance, though this will not be a required consideration on the
+	user's part. This will just be used for sorting/depth testing when
+	objects should be ordered by "height" or depth. It also provides
+	easier implimentation of 3D drawing and a 3D camera system that can
+	work with the same functions and shaders as would be used for 2D
+	drawing.
+	
+	- I want to have TPGLSprite and new shape/geometry types inherit from
+	a "drawable" class that will essentially just store an array of
+	Vertices, UV coords, normals, etc..., so that I can move away from
+	things like different "batch records" for each type of drawing. In
+	this way, when I want to draw a simple circle, PGL will not need to
+	check the specified render target already has different types of draws
+	waiting to be rendered, but will instead just batch every draw call
+	until the VBO size limit has been reached.
+	
+	- TPGLWindow will no longer wrap the window's framebuffer, but will
+	instead own it's own FBO that "represents" what will ultimately drawn
+	to the window. This will necesitate an additional blit to the window
+	before a buffer swap is done, but will also allow me to not have to
+	hack around flipping images to make sure that things are displayed
+	"right side up" and make it easier to use faster copying functions
+	like glCopyImageSubData and glCopyTex* on the GPU, as all FBO and
+	texture data will be kept in standard OpenGL coordinates.
+	Translation will have to be done between the user's "point of view"
+	and the OpenGL format behind the scenes, but this isn't a big deal.
+	
+	- I will no longer rely on my own implimentation of windowing and
+	context creation, but instead use GLFW and platform specific APIs
+	so as to minimize the potential for bugs and increase portibility.
+
+(------------------------------------------------------------------------)
+
 2022-11-24
 	- More work done on prototype 3D camera class implimentation.
 	It is still not contained in a PGL source unit, so as to avoid
