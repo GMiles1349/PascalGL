@@ -1,1 +1,0 @@
-In order to use examples, simply copy/paste the contents of the specific example's folder into the folder that contains the PGL source and dependencies. You can compile from the provided .pas file(s) or use the provided compiled 32 bit .exe.
