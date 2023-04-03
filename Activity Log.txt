@@ -1,3 +1,17 @@
+2023-04-02
+	- Everything has undergone a complete rewrite. Functionality
+	remains almost the same as it was previously. I will be updating
+	source and documentation in the near future, as well as posting
+	links to videos and other media that show off what PGL can do
+	currently.
+	
+	- The camera class has been fleshed out to allow for more 3D
+	functionality, incuding aiding in frustum culling. This
+	necesitated adding TPGLPlane and TPGLFrustum types to the PGLTypes
+	unit.
+
+(------------------------------------------------------------------------)
+
 2022-12-11
 	- The project is undergoing a complete rewrite with a new structure
 	and design philosophy. 
