@@ -5,6 +5,10 @@
 	links to videos and other media that show off what PGL can do
 	currently.
 	
+	- I lied, and I am still using my own windowing and context
+	creation code. This just makes it easier to handle input in ways
+	that I want to without having to hack around GLFW or SDL.
+	
 	- The camera class has been fleshed out to allow for more 3D
 	functionality, incuding aiding in frustum culling. This
 	necesitated adding TPGLPlane and TPGLFrustum types to the PGLTypes
