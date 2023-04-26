@@ -59,9 +59,9 @@ TPGLClock provides the user with a way to keep track of the passage of time and 
 #### Constructors
 
 - **Create(AFPS: Integer = 60)**  
-  **Create(AInterval: Double = 0.0166666)**
+  **Create(AInterval: Double = 0.0166666)**  
     AFPS - The number of cycles (or frames) TPGLClock should complete each second. This sets the Interval to double(1 / AFPS).  
-    AInterval - The desired duration in seconds of a TPGLClock cycle.
-    
-    *-- Description --*
-    TPGLClock.Create() returns a TPGLClock object. When a new instance of TPGLClock is created, it calls a private member function Init(), which sets all member fields to 0, save for the Interval which is set to the value passed by the user, and the CPU clock frequency is polled and cached.
+    AInterval - The desired duration in seconds of a TPGLClock cycle.  
+      
+    *-- Description --*  
+    TPGLClock.Create() returns a TPGLClock object. When a new instance of TPGLClock is created, it calls a private member function Init(), which sets all member fields to 0, save for the Interval which is set to the value passed by the user, and the CPU clock frequency is polled and cached.  
