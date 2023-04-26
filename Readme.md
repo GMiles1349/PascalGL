@@ -6,6 +6,7 @@ In it's current form, PGL includes functoinality for
 - Windowing
 - OpenGL context creation
 - Mouse, keyboard and controller input
+- Clocks and timers
 - Drawing graphics on the GPU and CPU
 - Audio loading, playback and manipulation
 - Vector and matrix math
@@ -38,4 +39,23 @@ user-accessible fields, properties and functions that belong to that object.
 It's a very simple concept, nothing at all that most anyone wouldn't assume or take for granted, but was
 a conscious choice so as to simplify the user's experience.
 
+### Why am I doing this?
+
+**The short answer:** because I like to make top-down shooters and Zelda-like games, and I don't like SFML 
+or GLFW.
+
+**The longer answer:** because I wanted to learn OpenGL to aid in writing engines for my games, and I found 
+myself feeling restricted by things like SFML and GLFW and writing a lot of boilerplate code to implement
+functionality that I personally thought would have been a given, e.g. manipulating image data on the
+CPU side, handling a wider range of window properties, overriding window behaviors, basic "camera"
+prototypes, etc...
+
+I wanted to learn how to have performant 2D rendering done on the GPU for an existing game protype that was
+using Win32 GDI for drawing, so I checked out SFML. I found it cumbersome and lacking in performance (that 
+may be a different story had I been using it with C++ vice pascal), so I decided "I'll just write my own SFML". 
+I jumped right into learning OpenGL, and chose GLFW as my tool for handling windowing and context creation. I 
+found GLFW limiting for some certain things I wanted to do, so then decided "I'll just write my own GLFW".
+
+Over a year later, and I've made no progress on the game, but I've had a great time figuring out how to write
+a framework that I could then use to build and engine and development tools with. The game will never be done.
 
