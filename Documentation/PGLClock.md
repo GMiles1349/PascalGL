@@ -10,3 +10,7 @@ The PGLClock.pas unit provides functionality for time-keeping and timed-events. 
 - TPGLEvent - Class
 - TPGLClockEvent - Procedure
 - TPGLTriggerType - Enum
+
+#### TPGLClock
+
+##### Overview
