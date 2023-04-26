@@ -99,3 +99,16 @@ TPGLClock provides the user with a way to keep track of the passage of time and 
 
   *-- Description --*  
   Immediately changes the value of Interval. Interval is calculated as abs(1 / AInterval) so as to disallow negative values. Does not affect execution if called while TPGLClock is running.
+
+- function **GetTime(): Double**  
+
+  *-- Description --*  
+  Returns the current CPU time in seconds. Does not affect CurrentTime or any other stored time values. Internally, TPGLClock calls GetTime() continuously during Wait() in order to block execution of code until GetTime() >= TargetTime, using the last value returned from GetTime() as the new CurrentTime.
+  
+  
+### TPGLEvent
+
+#### Overview
+TPGLEvent is an object that describes an "event" that the user wishes to happen at a pre-determined time or at an interval. TPGLEvent must be used in conjuction with TPGLClock. TPGLEvent is assigned a TPGLClock "owner" either at the time of or after creation. The TPGLClock owner caches a list of "owned" instances of TPGLEvent, and checks conditions during updates to decided whether or not a TPGLEvent should execute it's EventProc. A TPGLEvent is either "trigger on time" or "trigger on interval". In the former case, the EventProc should be executed once at the designated trigger time. In the latter, the EventProc should execute at interval after the time that the TPGLEvent was made active. "Trigger on Interval" events can execute once, or be set to repeating.
+
+#### Properties
