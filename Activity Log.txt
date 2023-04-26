@@ -1,4 +1,56 @@
 2023-04-02
+	- Audio has become the current focus as I contemplate how I want
+	to go forward with the graphics portion of the project. I've
+	placed too much emphasis on being able to take my 2D concepts to
+	3D spaces, and what I'm ending up with is a "hacky" codebase that
+	tries to let the user interact with 3D objects from a 2D
+	perspective, leading to user code that also looks and feels 
+	"hacky" and magic.
+	
+	- Began implementing soft-synth-esque functionality to the audio
+	unit. Users can generate different wave-forms, store them in
+	buffers of TArray<Int16> (for now, might move on to floats),
+	and perform edits and transformations on those buffers such as
+	adjusting gain, bass, treble, etc... bitcrush, speed up and slow
+	down the audio, change frequencies and bitdepths, trim, append, and
+	combine buffers, etc...
+	
+	- To aid in writing and fleshing out the audio functioanlity,
+	I've been working on a sort of chiptune tracker that allows the
+	user to create "instruments" by creating "waveform templates", 
+	and then applying those waveforms at different frequencies and
+	durations, and applying gain, attack, decay, and other properties
+	to each "note". The "notes" of each "instrument" are then 
+	generated in real-time as the track plays, and are streamed
+	through a new class, TPGLAudioStream.
+	
+	- TPGLAudioStream may or may not stick around in something
+	resembling it's current form. I forsee more more emphasis being
+	placed on the streamning buffers through OpenAL sources in the
+	future, as opposed to the current implementation that more or less
+	fills a collection of buffers of any size, and feeds them to a
+	source to be played all at once at the user's command. The goal
+	will be to give the user a way of "doing both" without having to
+	think about their audio in two different ways.
+	
+	- I am at the same time heavily considering just using an existing
+	audio framework or library to handle the majority of my audio.
+	Almost the entire point of PGL was to do things that have already
+	been done before, but with functionality that I personally want,
+	all hand written by me (mostly, anyway) in Delphi. Reinventing the
+	wheel, but it's my wheel that, and I'm learning more about and
+	gaining experience in building the wheel along the way. Using
+	an existing audio library feels like "cheating" here in a sense,
+	though, since it would be such a big chunk that I didn't handle
+	myself. I've already resigned to using FFTW for things like
+	timestretching, simply because I am not familiar at all with the
+	math involved there, and getting spun up on that feels like a
+	distraction rather than a learning process, such as was the case
+	with all the linear algebra, trig and light calculus involved in
+	writing PGLMath and PGLTypes. I don't know, we'll see.
+(------------------------------------------------------------------------)
+
+2023-04-02
 	- Everything has undergone a complete rewrite. Functionality
 	remains almost the same as it was previously. I will be updating
 	source and documentation in the near future, as well as posting
