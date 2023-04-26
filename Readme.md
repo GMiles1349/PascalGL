@@ -39,6 +39,11 @@ user-accessible fields, properties and functions that belong to that object.
 It's a very simple concept, nothing at all that most anyone wouldn't assume or take for granted, but was
 a conscious choice so as to simplify the user's experience.
 
+There is also an effor to make the individual source units and independant as possible, so that you can
+use **PGLClock.pas** for clock and timer functionality in projects where you want it, or **PGLAudio.pas**
+in another project, and not have to incure the bloat of also including the windowing, drawing and math
+units if you don't need them. Though, **PGLTypes.pas** is currently a requirement to use all other units.
+
 ### Why am I doing this?
 
 **The short answer:** because I like to make top-down shooters and Zelda-like games, and I don't like SFML 
