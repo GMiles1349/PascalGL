@@ -23,10 +23,15 @@ their data. The user **owns** their objects and has direct access to them, as op
 many C libraries give the user handles or pointers to objects which are passed into functions. Instead of 
 doing something like
 
-`glfwDestroyWindow(window)`
+>`glfwDestroyWindow(window)`
 or
-`glNamedBufferData(coolbuffer, sizeof(int) * somecoolnumber, &myarrayofdata[0], GL_STREAM_DRAW)`,
+>`glNamedBufferData(coolbuffer, sizeof(int) * somecoolnumber, &myarrayofdata[0], GL_STREAM_DRAW)`,
 we call the object's member functions directly like
-`TPGLWindow.Close()'.
+>`TPGLWindow.Close()`.
+
+There are perfomance costs associated with going this route, but for the purposes of what PGL is
+intended to do, I consider these costs neglibible. Further, going with an OO approach aids in
+development by allowing for the intellisense and similar to show you what your objects are 
+capable of without having to refer to documentation. Typing `TPGL`
 
 
