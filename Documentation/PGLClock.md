@@ -69,4 +69,6 @@ TPGLClock provides the user with a way to keep track of the passage of time and 
 #### **Procedures/Functions**  
   
 - procedure **Start()**  
--- Sets the TPGLClock instance's Running property to true, assigns CurrentTime the current CPU time inseconds, calculates the next TargetTime, and sets InitTime to CurrentTime.  
+
+*-- Description --*  
+Sets the TPGLClock instance's Running property to true, assigns CurrentTime the current CPU time inseconds, calculates the next TargetTime, and sets InitTime to CurrentTime.  
