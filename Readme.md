@@ -24,9 +24,9 @@ many C libraries give the user handles or pointers to objects which are passed i
 doing something like
 
 `glfwDestroyWindow(window)`
-
 or
-
-`glNamedBufferData(coolbuffer, sizeof(int) * somecoolnumber, &myarrayofdata[0], GL_STREAM_DRAW)`
+`glNamedBufferData(coolbuffer, sizeof(int) * somecoolnumber, &myarrayofdata[0], GL_STREAM_DRAW)`,
+we call the object's member functions directly like
+`TPGLWindow.Close()'.
 
 
