@@ -112,3 +112,27 @@ TPGLClock provides the user with a way to keep track of the passage of time and 
 TPGLEvent is an object that describes an "event" that the user wishes to happen at a pre-determined time or at an interval. TPGLEvent must be used in conjuction with TPGLClock. TPGLEvent is assigned a TPGLClock "owner" either at the time of or after creation. The TPGLClock owner caches a list of "owned" instances of TPGLEvent, and checks conditions during updates to decided whether or not a TPGLEvent should execute it's EventProc. A TPGLEvent is either "trigger on time" or "trigger on interval". In the former case, the EventProc should be executed once at the designated trigger time. In the latter, the EventProc should execute at interval after the time that the TPGLEvent was made active. "Trigger on Interval" events can execute once, or be set to repeating.
 
 #### Properties
+- **Owner: TPGLClock** *Read Only* 
+    Returns the instance of TPGLClock that the TPGLEvent has been assigned to. If TPGLEvent has not been assigned an owner, returns nil.  
+    
+- **Active: Boolean** *Read and Write*  
+    Returns the Active status of a TPGLEvent. If a TPGLEvent is owned by a TPGLClock and is Active, then the TPGLClock will allow it to execute its EventProc when time conditions are met. Otherwise, if the TPGLEvent is not Active, it is not evaluated by its owner and its EventProc will not be executed.
+    
+    The user can attempt to set Active to True or False at any point. If the TPGLEvent does not have an owner, its TriggerType is pgl_trigger_on_interval and TriggerInterval = 0, or its TriggerType is pgl_trigger_on_time and the owner's CurrentTime > TriggerTime, an attempt to set Active to True will fail. An attempt to set active to False will always succeed in the case that Active is True.
+    
+- **Repeating: Boolean** *Read and Write*  
+  Returns if a TPGLEvent with TriggerType pgl_trigger_on_interval is set to repeat execution of its EventProc. If a TPGLEvent's TriggerType is pgl_trigger_on_time, Repeating will return False, even if Repeating was set to True while the TPGLEvent had a TriggerType of pgl_trigger_on_time.
+  
+  The user can attemt to set Repeating to True or False at any point. If the TPGLEvent's TriggerType is pgl_trigger_on_time, the attempt will fail. If Repeating is set to true and then the TriggerType is set to pgl_trigger_on_time, Repeating will not automatically be set to False, although it will return False until the TriggerType is set back to pgl_trigger_on_interval.
+  
+- **EventProc: TPGLClockEvent** *Read and Write*  
+    A procedure that is to be executed when the TPGLEvent's time conditions have been met. TPGLClockEvent is defined as 'procedure()', or a procedure that takes no parameters.
+    
+    The user can assign or set EventProc to nil at any point. TPGLEvent does not require an assigned EventProc in order to be set as Active. Simply, nothing will happen when it's time conditions are met.  
+    
+- **TriggerType: TPGLTriggerType** *Read and Write*  
+    A value that determines what kind of trigger the TPGLEvent has and how it is handled by its TPGLClock owner. Must be one of either pgl_trigger_on_time or pgl_trigger_on_interval.  
+    
+    A value of pgl_trigger_on_time means that the TPGLEvent's EventProc will only execute once, and then the TPGLEvent's Active status will be set to false, though the status is set to false *before* the EventProc is executed, so the user can update the TriggerTime and reset the Active status in the EVentProc, thereby effectively having a repeating event.  
+    
+    A value of pgl_trigger_on_interval means that the TPGLEvent's EventProc will execute every time an Interval amount of time has passed since being assigned to a TPGLClock and being set to active, or since the last time the EventProc was executed. If Repeating is False, then the Active status will be set to False and the EventProc will not continue to be executed.
