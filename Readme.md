@@ -14,7 +14,7 @@ In it's current form, PGL includes functoinality for
 
 ### The idea behind PGL:
 
-PGL aims to provide an ** *Object Oriented* ** interface for the user to create and handle a window, 
+PGL aims to provide an *Object Oriented* interface for the user to create and handle a window, 
 user input, manipulate graphical image data on the GPU and CPU, process audio, and tie it all together
 with similar functionality that uses the classes and structs defined in the **PGLTypes** unit.
 
