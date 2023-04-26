@@ -7,7 +7,8 @@ In it's current form, PGL includes functoinality for
 - OpenGL context creation
 - Mouse, keyboard and controller input
 - Clocks and timers
-- Drawing graphics on the GPU and CPU
+- Manipulating graphical data on the GPU and CPU sides
+- Drawing to the window and offscreen targets
 - Audio loading, playback and manipulation
 - Vector and matrix math
 - Color manipulation
@@ -63,4 +64,3 @@ found GLFW limiting for some certain things I wanted to do, so then decided "I'l
 
 Over a year later, and I've made no progress on the game, but I've had a great time figuring out how to write
 a framework that I could then use to build and engine and development tools with. The game will never be done.
-
