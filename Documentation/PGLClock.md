@@ -72,3 +72,30 @@ TPGLClock provides the user with a way to keep track of the passage of time and 
 
   *-- Description --*  
   Sets the TPGLClock instance's Running property to true, assigns CurrentTime the current CPU time inseconds, calculates the next TargetTime, and sets InitTime to   CurrentTime.  
+  
+- procedure **Stop()**  
+
+  *-- Description --*  
+  Sets the TPGLClock instance's Running property to false and calls the private member function Init() to reset all member fields.
+  
+- procedure **Wait()**  
+
+  *-- Description --*  
+  Stalls execution of the thread by entering a loop until TPGLClock.GetTime() returns a value that greate than or equal to TargetTime.
+  
+- procedure **WaitForStableFrame()**  
+
+  *-- Description --*  
+  Continuously calls TPGLClock.Wait() until the instance caches an FPS greater than or equal to 99% of (1 / Interval). In effect, this blocks execution until the TPGLClock's cycles-per-second/frames-per-second is approaching the rate desired by the user.
+  
+- procedure **SetIntervalInSeconds(AInterval: Double)**  
+    AInterval - The value to set the TPGLClock's update interval to.
+
+  *-- Description --*  
+  Immediately changes the value of Interval. Interval is set to abs(AInterval) so as to disallow negative values. Does not affect execution if called while TPGLClock is running.
+  
+- procedure **SetIntervalInFPS(AInterval: Double)**  
+    AInterval - The desired frames-per-second/cycles-per-second.
+
+  *-- Description --*  
+  Immediately changes the value of Interval. Interval is calculated as abs(1 / AInterval) so as to disallow negative values. Does not affect execution if called while TPGLClock is running.
