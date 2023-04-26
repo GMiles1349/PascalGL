@@ -18,4 +18,11 @@ TPGLClock provides the user with a way to keep track of the passage of time and 
 
 #### Properties
 - Running: Boolean  
-  Returns a True/False values based on whether or not the user has "started" the clock with a successful call to TPGLClock.Start().
+  *Returns a True/False values based on whether or not the user has "started" the clock with a successful call to TPGLClock.Start().*  
+  
+- Interval: Double  
+  *Returns a Double value that represents the interval in seconds at which the TPGLClock instance is to update at.  
+  A returned value of '1' would indicate and update interval of 1 second. A returned value of '0.5' would indicate an update interval of half a second.*  
+  
+- CurrentTime: Double  
+- *Returns a Double value that represnts the last polled CPU time in seconds.*
