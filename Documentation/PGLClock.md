@@ -56,7 +56,7 @@ TPGLClock provides the user with a way to keep track of the passage of time and 
   *If Catch Up is enabled, then when the TPGLClock instance updates after returning from Wait(), it will adjust* **TargetTime** *to be exactly the time at the last call to TPGLClock.Start() + TPGLClock.Ticks * TPGLClock.Interval. Under circumstances where TPGLClock rarely updates slower than* **Interval** *and only by small variations, this will result in TPGLClock returning from Wait() very slightly before or very slightly after* **Interval** *seconds since the last update. Under circumstances where TPGLClock regularly returns from Wait() after* **TargetTime** *or by large deviations from* **Interval** *, this can cause TPGLClock to execute multiple cycles very quickly, resulting in noticably uneven update intervals*.  
   
 
-#### Constructors
+#### **Constructors**
 
 - **Create(AFPS: Integer = 60)**  
   **Create(AInterval: Double = 0.0166666)**  
@@ -65,3 +65,8 @@ TPGLClock provides the user with a way to keep track of the passage of time and 
       
     *-- Description --*  
     TPGLClock.Create() returns a TPGLClock object. When a new instance of TPGLClock is created, it calls a private member function Init(), which sets all member fields to 0, save for the Interval which is set to the value passed by the user, and the CPU clock frequency is polled and cached.  
+    
+#### **Procedures/Functions**  
+  
+- procedure **Start()**  
+    Sets the TPGLClock instance's Running property to true, assigns CurrentTime the current CPU time inseconds, calculates the next TargetTime, and sets InitTime to CurrentTime.  
