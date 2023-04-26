@@ -41,3 +41,16 @@ TPGLClock provides the user with a way to keep track of the passage of time and 
   
 - **FPS: Double** *Read Only*  
   *The average number of cycles that the instance of TPGLClock completed over the last second. TPGLClock keeps a private count of the number of cycles and the amount of time since the previous update to* **FPS** *, and updates it when that time is >= 1 second.* **FPS** *is calculated as* `TPGLClock.fFrames / TPGLClock.fFrameTime` *, where fFrames is the number of cycles and fFrameTime is the amount of time elapsed since the last update to* **FPS** *.*      
+  
+- **AverageFPS: Double** *Read Only*  
+  *A time value in seconds that represents the average of* **FPS** *since a call to any of TPGLClock.Start() or TPGLClock.ResetAverageFPS().*  
+  
+- **Ticks: Int64** *Read Only*  
+  *The number of cycles that an instance of TPGLClock has completed since the last call to TPGLClock.Start(). Calling TPGLClock.Stop() will reset this value.*  
+  
+- **ExpectedTicks: Int64** *Read Only*  
+  *The estimated number of cycles that an instance of TPGLClock should complete in 1 second, given it's current interval.*  
+  
+- **CatchUpEnabled: Boolean** *Read and Write*  
+  *Returns if the TPGLClock instance has Catch Up enabled. The user can change this value directly with the assignment operator ':='.*  
+  *If Catch Up is enabled, then when the TPGLClock instance updates after returning from Wait(), it will adjust* **TargetTime** *to be exactly the time at the last call to TPGLClock.Start() + TPGLClock.Ticks * TPGLClock.Interval. Under circumstances where TPGLClock rarely updates slower than* **Interval** *and only by small variations, this will result in TPGLClock returning from Wait() very slightly before or very slightly after* **Interval** *seconds since the last update. Under circumstances where TPGLClock regularly returns from Wait() after* **TargetTime** *or by large deviations from* **Interval** *, this can cause TPGLClock to execute multiple cycles very quickly, resulting in noticably uneven update intervals*.  
