@@ -1,4 +1,4 @@
-# PGL
+# PGL - the Pascal Game Library.
 
 ### PGL is a 2D game framework, which also offers some limited 3D functionality, written in Delphi. 
 In it's current form, PGL includes functoinality for
@@ -10,5 +10,7 @@ In it's current form, PGL includes functoinality for
 - Vector and matrix math
 - Color manipulation
 - Simple collision between 2D and 3D objects
+
+### How PGL works:
 
 
