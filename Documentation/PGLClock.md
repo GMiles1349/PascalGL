@@ -11,6 +11,11 @@ The PGLClock.pas unit provides functionality for time-keeping and timed-events. 
 - TPGLClockEvent - Procedure
 - TPGLTriggerType - Enum
 
-#### TPGLClock
+### TPGLClock
 
-##### Overview
+#### Overview
+TPGLClock provides the user with a way to keep track of the passage of time and control the interval at which execution of other code happens. Additionally, the TPGLClock can "store" instanes of TPGLEvent, to be executed at designated times and intervals.
+
+#### Properties
+- Running: Boolean
+  Returns a True/False values based on whether or not the user has "started" the clock with a successful call to TPGLClock.Start().
