@@ -112,7 +112,7 @@ TPGLClock provides the user with a way to keep track of the passage of time and 
 TPGLEvent is an object that describes an "event" that the user wishes to happen at a pre-determined time or at an interval. TPGLEvent must be used in conjuction with TPGLClock. TPGLEvent is assigned a TPGLClock "owner" either at the time of or after creation. The TPGLClock owner caches a list of "owned" instances of TPGLEvent, and checks conditions during updates to decided whether or not a TPGLEvent should execute it's EventProc. A TPGLEvent is either "trigger on time" or "trigger on interval". In the former case, the EventProc should be executed once at the designated trigger time. In the latter, the EventProc should execute at interval after the time that the TPGLEvent was made active. "Trigger on Interval" events can execute once, or be set to repeating.
 
 #### Properties
-- **Owner: TPGLClock** *Read Only* 
+- **Owner: TPGLClock** *Read Only*  
     Returns the instance of TPGLClock that the TPGLEvent has been assigned to. If TPGLEvent has not been assigned an owner, returns nil.  
     
 - **Active: Boolean** *Read and Write*  
